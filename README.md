@@ -1,94 +1,454 @@
-# Obsidian Sample Plugin
+# Workout Tracker Plugin for Obsidian
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+Comprehensive workout tracking plugin for Obsidian that allows you to log, track, and visualize your fitness progress directly in your markdown notes.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+## 🏋️ Key Features
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+### 📊 Interactive Inline Interface
+**Works directly in your markdown files** - no separate panels needed! Add a `workout` code block and get a full interactive calendar interface.
 
-## First time developing plugins?
+### � Smart Exercise Management
+- **Exercise Library**: Pre-loaded with 13+ common exercises
+- **Autocomplete**: Smart suggestions from library and workout history  
+- **Custom Exercises**: Create new exercises with muscle group categorization
+- **1RM Tracking**: One-rep maximum tracking with intensity calculations
 
-Quick starting guide for new plugin devs:
+### 🗓️ Multiple View Modes
+- **Calendar View**: Week, Month, and Year views for workout planning
+- **Drag & Drop**: Move workouts between dates effortlessly
+- **Visual Indicators**: Color-coded workout types and current date highlighting
+- **Progress Tracking**: Visual workout statistics and trends
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+### 📝 Seamless Integration
+- **Markdown Native**: Uses code blocks (`workout`, `exercises`) in your notes
+- **Auto-save**: Automatic data persistence to your files
+- **Theme Compatible**: Works with all Obsidian themes
+- **Mobile Friendly**: Responsive design for mobile devices
 
-## Releasing new releases
+## 🚀 Quick Start
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+### Installation
+1. Copy plugin files to `.obsidian/plugins/workout-tracker/` in your vault
+2. Enable plugin in Obsidian Settings → Community Plugins  
+3. Run command "Create Basic Exercise Library" (Ctrl/Cmd+P)
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+### Basic Usage
 
-## Adding your plugin to the community plugin list
+Add a workout block to any note:
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
-
-## How to use
-
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
-
-## Manually installing the plugin
-
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
-
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint ./src/`
-
-## Funding URL
-
-You can include funding URLs where people who use your plugin can financially support it.
-
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
-
-```json
+```workout
 {
-    "fundingUrl": "https://buymeacoffee.com"
+  "2024-10-12": {
+    "type": "Strength",
+    "status": "completed", 
+    "exercises": [
+      {
+        "name": "Bench Press",
+        "sets": [
+          {"reps": 8, "weight": 80, "intensity": 85}
+        ]
+      }
+    ]
+  }
 }
 ```
 
-If you have multiple URLs, you can also do:
+The code block transforms into an interactive calendar interface!
 
-```json
+## 🎯 Возможности
+
+### 📅 Календарное отображение тренировок
+- Просмотр тренировок по неделям и месяцам
+- Навигация между периодами
+- Цветовое кодирование статусов тренировок
+- Интерактивные элементы для быстрого редактирования
+
+### 💪 Управление тренировками
+- Добавление новых тренировок с полной детализацией
+- Редактирование существующих тренировок
+- Отслеживание статусов: запланировано, выполнено, пропущено, болезнь
+- Заметки и комментарии к тренировкам
+
+### 🏋️ Управление упражнениями
+- Добавление упражнений к тренировкам
+- Отслеживание подходов, повторений и веса
+- Заметки к каждому упражнению
+- Интуитивный интерфейс для ввода данных
+
+### 📚 Библиотека упражнений
+- База данных упражнений с описаниями
+- Поиск и фильтрация по категориям
+- Информация о целевых мышечных группах
+- Инструкции по выполнению упражнений
+
+## Установка
+
+### Из Community Plugins (когда будет доступен)
+1. Откройте настройки Obsidian → Community Plugins
+2. Найдите "Workout Tracker" 
+3. Установите и активируйте плагин
+
+### Вручную
+1. Скачайте `main.js`, `styles.css`, `manifest.json` из релизов
+2. Создайте папку `workout-tracker` в `.obsidian/plugins/`
+3. Поместите файлы в созданную папку
+4. Перезапустите Obsidian и активируйте плагин
+
+## Использование
+
+### Блок тренировок
+
+Создайте блок кода с типом `workout` для отображения календаря тренировок:
+
+```workout
 {
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
+  "2024-01-15": {
+    "status": "done",
+    "type": "грудь", 
+    "notes": "Отличная тренировка",
+    "exercises": [
+      {
+        "name": "Жим лежа",
+        "sets": [
+          { "reps": 10, "weight": 80 },
+          { "reps": 8, "weight": 85 }
+        ],
+        "notes": "Новый PR"
+      }
+    ]
+  }
 }
 ```
 
-## API Documentation
+### Блок упражнений
 
-See https://github.com/obsidianmd/obsidian-api
+Создайте блок кода с типом `exercises` для библиотеки упражнений:
+
+```exercises
+{
+  "Жим лежа": {
+    "category": "Грудь",
+    "description": "Базовое упражнение для грудных мышц",
+    "muscleGroups": ["Грудь", "Трицепс"],
+    "equipment": "Штанга",
+    "difficulty": "Средний",
+    "instructions": [
+      "Лягте на скамью",
+      "Опустите штангу к груди", 
+      "Выжмите штангу вверх"
+    ]
+  }
+}
+```
+
+## Интерфейс
+
+### Календарное представление
+- **Кнопки навигации**: Переключение между неделями и месяцами
+- **Сегодня**: Быстрый переход к текущей дате
+- **Цветовые статусы**:
+  - 🟢 Выполнено
+  - 🔵 Запланировано
+  - 🟠 Пропущено
+  - 🔴 Болезнь
+
+### Формы ввода
+- **Полноэкранные модальные окна** для комфортного ввода данных
+- **Адаптивные поля** для различных типов информации
+- **Валидация данных** перед сохранением
+- **Интуитивная навигация** между формами
+
+### Управление упражнениями
+- **Динамическое добавление подходов**
+- **Отслеживание прогресса** по весам и повторениям
+- **Группировка по типам тренировок**
+- **Быстрое редактирование** существующих записей
+
+## Типы тренировок
+
+Поддерживаемые категории:
+- Грудь
+- Спина
+- Ноги
+- Плечи
+- Руки
+- Пресс
+- Кардио
+- Другое
+
+## Статусы тренировок
+
+- **Запланировано** (`planned`) - тренировка запланирована
+- **Выполнено** (`done`) - тренировка завершена
+- **Пропущено** (`skipped`) - тренировка пропущена
+- **Болезнь** (`illness`) - пропуск по болезни
+
+## Структура данных
+
+### Тренировка
+```typescript
+interface WorkoutEntry {
+  status: 'planned' | 'done' | 'skipped' | 'illness';
+  type: string;
+  notes?: string;
+  exercises?: Exercise[];
+}
+```
+
+### Упражнение
+```typescript
+interface Exercise {
+  name: string;
+  sets: ExerciseSet[];
+  notes?: string;
+}
+
+interface ExerciseSet {
+  reps: number;
+  weight?: number;
+}
+```
+
+## Горячие клавиши
+
+- `Escape` - Закрыть модальное окно
+- Клик по фону - Закрыть модальное окно
+- Навигация с клавиатуры в формах
+
+## Поддержка
+
+Плагин полностью совместим с темной и светлой темами Obsidian.
+
+## Разработка
+
+```bash
+npm install
+npm run build  # Сборка
+npm run dev    # Разработка
+```
+
+## Лицензия
+
+MIT License
+```
+
+↓ Превращается в интерактивный календарь ↓
+
+## 🎯 Возможности
+
+### 📅 Календарное отображение тренировок
+- Просмотр тренировок по неделям и месяцам
+- Навигация между периодами
+- Цветовое кодирование статусов тренировок
+- Интерактивные элементы для быстрого редактирования
+
+### 💪 Управление тренировками
+- Добавление новых тренировок с полной детализацией
+- Редактирование существующих тренировок
+- Отслеживание статусов: запланировано, выполнено, пропущено, болезнь
+- Заметки и комментарии к тренировкам
+
+### 🏋️ Управление упражнениями
+- Добавление упражнений к тренировкам
+- Отслеживание подходов, повторений и веса
+- Заметки к каждому упражнению
+- Интуитивный интерфейс для ввода данных
+
+### 📚 Библиотека упражнений
+- База данных упражнений с описаниями
+- Поиск и фильтрация по категориям
+- Информация о целевых мышечных группах
+- Инструкции по выполнению упражнений
+
+## Установка
+
+### Из Community Plugins (когда будет доступен)
+1. Откройте настройки Obsidian → Community Plugins
+2. Найдите "Workout Tracker" 
+3. Установите и активируйте плагин
+
+### Вручную
+1. Скачайте `main.js`, `styles.css`, `manifest.json` из релизов
+2. Создайте папку `workout-tracker` в `.obsidian/plugins/`
+3. Поместите файлы в созданную папку
+4. Перезапустите Obsidian и активируйте плагин
+
+```
+┌─ Тренировки ──────────────────────────────────┐
+│                      [+ Добавить тренировку] │
+│ [📅 Календарь] [📋 Список] [📊 Статистика]   │
+│ ───────────────────────────────────────────── │
+│                                               │
+│  ПН   ВТ   СР   ЧТ   ПТ   СБ   ВС           │
+│ ┌──┐ ┌──┐ ┌──┐ ┌──┐ ┌──┐ ┌──┐ ┌──┐          │
+│ │7 │ │8 │ │9 │ │10│ │11│ │12│ │13│          │
+│ │+ │ │✅│ │+ │ │+ │ │+ │ │✅│ │+ │          │
+│ └──┘ └──┘ └──┘ └──┘ └──┘ └──┘ └──┘          │
+│              Нажмите ✏️ для редактирования   │
+└───────────────────────────────────────────────┘
+```
+
+## 🎯 Возможности
+
+### � Интерактивные markdown блоки
+- **Прямое редактирование** - все изменения сохраняются в ваш файл
+- **3 режима отображения** - календарь, список, статистика
+- **Автосинхронизация** - данные всегда актуальные
+- **Модальные формы** - добавление и редактирование тренировок
+
+### 💾 Умная работа с данными
+- **JSON в Markdown** - данные остаются в читаемом формате
+- **Совместимость с Dataview** - создавайте запросы к данным
+- **Автоматическое создание файлов** - готовые шаблоны
+- **Библиотека упражнений** - базовый набор + возможность расширения
+
+### ⚡ Современный интерфейс
+- **Inline интерактивность** - работа прямо в файле
+- **Темы Obsidian** - автоматическая адаптация
+- **Мгновенные обновления** - изменения видны сразу
+- **Интуитивный UX** - всё понятно без инструкций
+
+## Установка
+
+### Вручную
+1. Скачайте `main.js`, `styles.css`, `manifest.json` из релизов
+2. Создайте папку `workout-tracker` в `.obsidian/plugins/`
+3. Поместите файлы в созданную папку
+4. Перезагрузите Obsidian и включите плагин в настройках
+
+### Из репозитория
+1. Клонируйте репозиторий в `.obsidian/plugins/workout-tracker/`
+2. Выполните `npm install && npm run build`
+3. Перезагрузите Obsidian и включите плагин
+
+## Использование
+
+### Первый запуск
+1. После установки откройте плагин через ленту или команду "Открыть Workout Tracker"
+2. Плагин автоматически создаст файлы:
+   - `workout-tracker.md` - данные тренировок
+   - `exercises.json` - библиотека упражнений
+
+### Виды отображения
+
+#### 🗓️ Неделя (редактируемый)
+- Полная детализация: дни недели, упражнения, подходы, повторы, вес
+- Возможность добавления и редактирования упражнений
+- Цветовые схемы по типу тренировки и статусу
+- Основной режим редактирования
+
+#### 📅 Месяц (обзорный)  
+- Минимум деталей, показ типов тренировок по дням
+- Цветовая кодировка групп мышц
+- Только просмотр
+
+#### 📊 Год (архивный)
+- Общая динамика: частота тренировок, распределение по типам
+- Только просмотр
+
+#### 📈 Прогресс (визуализация)
+- Графики прогресса по упражнениям (React + Recharts)
+- Линейные и столбчатые графики
+- Фильтры по упражнению, группе мышц, датам
+- Экспорт в XLSX
+
+#### 📚 Упражнения (справочник)
+- Библиотека всех упражнений по группам мышц
+- Добавление новых упражнений
+- Автозаполнение в основном интерфейсе
+
+### Статусы тренировок
+
+- ✅ **done** — выполнено
+- 📋 **planned** — запланировано  
+- ⏭️ **skipped** — пропущено
+- 🏥 **illness** — болезнь/отпуск
+
+### Формат данных
+
+Данные хранятся в `workout-tracker.md` в формате JSON:
+
+```markdown
+```workout
+{
+  "2025-10-06": {
+    "status": "done",
+    "type": "грудь", 
+    "exercises": [
+      { 
+        "name": "Жим лёжа", 
+        "sets": [
+          { "reps": 10, "weight": 60 },
+          { "reps": 8, "weight": 65 }
+        ] 
+      }
+    ]
+  },
+  "2025-10-08": {
+    "status": "planned",
+    "type": "спина",
+    "notes": "Подтягивания с дополнительным весом"
+  }
+}
+```
+```
+
+## Настройки
+
+- **Файл данных** - путь к markdown файлу с тренировками
+- **Файл упражнений** - путь к JSON файлу с библиотекой упражнений  
+- **Вид по умолчанию** - какой вид открывать при запуске
+- **Автосохранение** - автоматически сохранять изменения
+- **Язык интерфейса** - русский/английский
+
+## Разработка
+
+### Структура проекта
+```
+src/
+├── components/          # React компоненты
+│   ├── views/          # Виды (Week, Month, Year, Progress, Spec)
+│   └── ui/             # UI компоненты
+├── data/               # Менеджер данных
+├── types/              # TypeScript типы
+├── utils/              # Утилиты
+├── views/              # Obsidian виды
+└── main.ts             # Основной файл плагина
+```
+
+### Команды для разработки
+```bash
+npm install         # Установка зависимостей
+npm run dev         # Разработка с hot reload
+npm run build       # Сборка для продакшена
+```
+
+### Технологический стек
+- **TypeScript** - основной язык
+- **React + JSX** - UI компоненты  
+- **Recharts** - графики и диаграммы
+- **SheetJS (xlsx)** - экспорт в Excel
+- **ESBuild** - сборщик
+
+## Roadmap
+
+- [ ] Полная реализация Week View с редактированием
+- [ ] Интерактивные графики в Progress View
+- [ ] Экспорт в XLSX
+- [ ] Импорт из существующих данных
+- [ ] Автоматический расчёт прогресса (PR Tracking)
+- [ ] Heatmap нагрузок
+- [ ] Темная/светлая тема
+- [ ] Английская локализация
+
+## Лицензия
+
+MIT License. См. [LICENSE](LICENSE) для деталей.
+
+## Поддержка
+
+Если вы нашли баг или у вас есть предложения, создайте issue в репозитории.
+
+---
+
+*Сделано с ❤️ для сообщества Obsidian*

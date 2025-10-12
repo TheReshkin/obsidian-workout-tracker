@@ -1,8 +1,1714 @@
-/*
+/* Workout Tracker Plugin Styles */
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+:root {
+  --color-green: #22c55e; /* Более яркий зеленый */
+  --workout-success-color: #22c55e; /* Собственная переменная для успеха */
+  /* Альтернативные варианты:
+  --color-green: #16a34a; /* Темно-зеленый */
+  /* --color-green: #10b981; /* Изумрудный */
+  /* --color-green: #059669; /* Морской волны */
+  /* --color-green: #84cc16; /* Лайм */
+}
 
-If your plugin does not need CSS, delete this file.
+.workout-tracker-app {
+  padding: 16px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
 
-*/
+.workout-tracker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 16px;
+  gap: 16px;
+}
+
+.workout-tracker-header h2 {
+  margin: 0;
+  color: var(--text-normal);
+  flex-shrink: 0;
+}
+
+.workout-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+.workout-action-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.workout-action-btn {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 6px 12px;
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.workout-action-btn:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--background-modifier-border-hover);
+}
+
+.workout-action-btn:active {
+  background: var(--background-modifier-active);
+}
+
+.workout-action-btn.workout-btn-primary {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+.workout-action-btn.workout-btn-primary:hover {
+  background: var(--interactive-accent-hover);
+  border-color: var(--interactive-accent-hover);
+}
+
+.workout-tracker-content {
+  flex: 1;
+  overflow: auto;
+}
+
+.workout-tracker-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--text-muted);
+}
+
+/* View Switcher */
+.workout-view-switcher {
+  display: flex;
+  gap: 4px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.workout-view-button {
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.workout-view-button:hover {
+  background: var(--background-modifier-hover);
+}
+
+.workout-view-button.active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+/* Week View */
+.workout-week-view {
+  padding: 16px;
+}
+
+.week-placeholder {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+}
+
+.week-placeholder ul {
+  margin: 12px 0 0 0;
+  padding-left: 20px;
+}
+
+.week-placeholder li {
+  margin-bottom: 4px;
+  color: var(--text-muted);
+}
+
+/* Month View */
+.workout-month-view {
+  padding: 16px;
+}
+
+.month-placeholder {
+  margin-top: 20px;
+  padding: 40px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Year View */
+.workout-year-view {
+  padding: 16px;
+}
+
+.year-placeholder {
+  margin-top: 20px;
+  padding: 40px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Progress View */
+.workout-progress-view {
+  padding: 16px;
+}
+
+.progress-placeholder {
+  margin-top: 20px;
+  padding: 40px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Spec View */
+.workout-spec-view {
+  padding: 16px;
+}
+
+.spec-placeholder {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+}
+
+.spec-placeholder ul {
+  margin: 12px 0 0 0;
+  padding-left: 20px;
+}
+
+.spec-placeholder li {
+  margin-bottom: 4px;
+  color: var(--text-muted);
+}
+
+/* Модальные окна */
+.workout-exercises-container {
+  margin: 16px 0;
+  padding: 12px;
+  background: var(--background-secondary);
+  border-radius: 6px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.workout-exercise-item {
+  margin-bottom: 20px;
+  padding: 12px;
+  background: var(--background-primary);
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.workout-exercise-item:last-child {
+  margin-bottom: 0;
+}
+
+.workout-sets-container {
+  margin: 8px 0;
+  padding-left: 16px;
+}
+
+.workout-set-item {
+  margin-bottom: 8px;
+  padding: 8px;
+  background: var(--background-secondary);
+  border-radius: 4px;
+}
+
+.workout-set-item:last-child {
+  margin-bottom: 0;
+}
+
+.workout-placeholder {
+  text-align: center;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 20px;
+}
+
+.workout-quick-actions {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.workout-hint {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin: 12px 0;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Кнопки в формах */
+.mod-warning {
+  background: var(--color-red) !important;
+  color: white !important;
+}
+
+.mod-cta {
+  background: var(--interactive-accent) !important;
+  color: var(--text-on-accent) !important;
+}
+
+/* Общие стили */
+h3 {
+  color: var(--text-normal);
+  margin: 0 0 12px 0;
+  font-size: 18px;
+}
+
+p {
+  color: var(--text-muted);
+  margin: 8px 0;
+}
+
+/* Интерактивный вид тренировок в файле */
+.workout-interactive-view {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  background: var(--background-primary);
+}
+
+.workout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.workout-title {
+  margin: 0;
+  color: var(--text-normal);
+  font-size: 18px;
+}
+
+.workout-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.workout-btn {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 6px 12px;
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.workout-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.workout-btn-primary {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+.workout-btn-primary:hover {
+  background: var(--interactive-accent-hover);
+}
+
+.workout-view-switcher {
+  display: flex;
+  gap: 4px;
+}
+
+.workout-view-btn {
+  background: transparent;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 11px;
+  transition: all 0.2s ease;
+}
+
+.workout-view-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.workout-view-btn.active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+/* Календарный вид */
+.workout-calendar-view {
+  margin-top: 16px;
+}
+
+.workout-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.workout-day {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  min-height: 100px;
+  background: var(--background-secondary);
+}
+
+.workout-day-header {
+  padding: 8px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--background-primary);
+  border-radius: 6px 6px 0 0;
+}
+
+.day-name {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.day-number {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.workout-day-content {
+  padding: 8px;
+}
+
+.workout-empty-day {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.workout-add-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px dashed var(--text-muted);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.workout-add-btn:hover {
+  border-color: var(--interactive-accent);
+  color: var(--interactive-accent);
+  background: var(--background-modifier-hover);
+}
+
+/* Карточки тренировок */
+.workout-card {
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 4px;
+  position: relative;
+}
+
+.workout-card.status-done {
+  border-left: 3px solid var(--color-green);
+}
+
+.workout-card.status-planned {
+  border-left: 3px solid var(--color-blue);
+}
+
+.workout-card.status-skipped {
+  border-left: 3px solid var(--color-orange);
+}
+
+.workout-card.status-illness {
+  border-left: 3px solid var(--color-red);
+}
+
+.workout-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.workout-type {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.workout-card-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.workout-card:hover .workout-card-actions {
+  opacity: 1;
+}
+
+.workout-action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  border-radius: 2px;
+  font-size: 10px;
+  transition: background 0.2s ease;
+}
+
+.workout-action-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.workout-notes {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* Вид списка */
+.workout-list-view {
+  margin-top: 16px;
+}
+
+.workout-list-item {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: var(--background-secondary);
+}
+
+.workout-date {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--background-primary);
+  border-radius: 6px 6px 0 0;
+}
+
+.date-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-normal);
+}
+
+.status {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+}
+
+.status-done {
+  background: var(--color-green);
+  color: white;
+}
+
+.status-planned {
+  background: var(--color-blue);
+  color: white;
+}
+
+.status-skipped {
+  background: var(--color-orange);
+  color: white;
+}
+
+.status-illness {
+  background: var(--color-red);
+  color: white;
+}
+
+.workout-empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 40px;
+  font-style: italic;
+}
+
+/* Вид статистики */
+.workout-stats-view {
+  margin-top: 16px;
+}
+
+.workout-general-stats,
+.workout-muscle-stats {
+  background: var(--background-secondary);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.workout-general-stats h4,
+.workout-muscle-stats h4 {
+  margin: 0 0 12px 0;
+  color: var(--text-normal);
+  font-size: 16px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.stat-item,
+.muscle-group-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--background-primary);
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.stat-label,
+.group-name {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.stat-value,
+.group-count {
+  color: var(--text-normal);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.workout-error {
+  background: var(--background-modifier-error);
+  color: var(--text-error);
+  padding: 12px;
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-error-border);
+}
+
+/* Инлайн модальные окна */
+.workout-inline-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Полноэкранное модальное окно */
+.workout-fullscreen-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000; /* Высокий z-index для отображения поверх всего */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.workout-modal-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  backdrop-filter: blur(2px);
+}
+
+.workout-modal-content {
+  position: relative;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  max-width: 500px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  animation: modalSlideIn 0.2s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.workout-fullscreen-modal .workout-modal-content {
+  transform: translate(-50%, -50%);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: 600px;
+  width: 95%;
+}
+
+.workout-inline-form {
+  padding: 20px;
+}
+
+.workout-inline-form h4 {
+  margin: 0 0 16px 0;
+  color: var(--text-normal);
+  font-size: 16px;
+}
+
+.workout-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  min-height: 38px;
+}
+
+.workout-input::placeholder {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.workout-input:focus {
+  outline: none;
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px var(--interactive-accent-hover);
+}
+
+.workout-textarea {
+  min-height: 80px;
+  resize: vertical;
+  font-family: inherit;
+  padding: 10px 14px;
+  line-height: 1.4;
+}
+
+.workout-form-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--background-modifier-border);
+}
+
+.workout-btn-danger {
+  background: var(--color-red);
+  color: white;
+  border-color: var(--color-red);
+}
+
+.workout-btn-danger:hover {
+  background: var(--color-red);
+  opacity: 0.8;
+}
+
+.workout-exercises-section {
+  margin: 16px 0;
+  padding: 12px;
+  background: var(--background-secondary);
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.workout-exercises-section h5 {
+  margin: 0 0 8px 0;
+  color: var(--text-normal);
+  font-size: 14px;
+}
+
+.workout-exercise-summary {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+/* Навигационные элементы */
+.workout-navigation {
+  margin-bottom: 20px;
+}
+
+.workout-nav-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+/* Кнопки переключения режимов */
+.workout-mode-buttons {
+  display: flex;
+  gap: 4px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.workout-mode-btn {
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.workout-mode-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.workout-mode-btn.active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Навигация по периодам */
+.workout-period-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 8px 16px;
+}
+
+.workout-nav-btn {
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: 40px;
+}
+
+.workout-nav-btn:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+
+.workout-nav-btn:active {
+  background: var(--background-modifier-active);
+}
+
+.workout-nav-prev,
+.workout-nav-next {
+  font-size: 16px;
+  font-weight: bold;
+  min-width: 36px;
+}
+
+.workout-nav-today {
+  background: var(--color-green);
+  color: white;
+  border-color: var(--color-green);
+  font-weight: 600;
+}
+
+.workout-nav-today:hover {
+  background: var(--color-green);
+  opacity: 0.8;
+}
+
+.workout-current-period {
+  text-align: center;
+  min-width: 200px;
+  margin: 0 8px;
+}
+
+.workout-week-range {
+  font-weight: 600;
+  color: var(--text-normal);
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.workout-month-year {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* Дни из других месяцев */
+.workout-day-header.other-month {
+  opacity: 0.5;
+}
+
+.workout-day-header.other-month .day-number {
+  color: var(--text-muted);
+}
+
+/* Подсветка текущего дня */
+.workout-day.today {
+  border: 2px solid var(--interactive-accent);
+  box-shadow: 0 0 8px rgba(var(--interactive-accent-rgb), 0.3);
+}
+
+.workout-day.today .workout-day-header {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.workout-day.today .day-name,
+.workout-day.today .day-number {
+  color: var(--text-on-accent);
+}
+
+/* Годовой вид */
+.workout-year-view {
+  padding: 16px 0;
+}
+
+.workout-year-months {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.workout-year-month {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.workout-year-month:hover {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.workout-year-month.current-month {
+  border-color: var(--interactive-accent);
+  background: var(--background-primary);
+  box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+}
+
+.workout-month-header {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-normal);
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.workout-month-bars {
+  display: flex;
+  height: 24px;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: var(--background-modifier-border);
+}
+
+.workout-type-bar {
+  height: 100%;
+  transition: all 0.2s ease;
+  position: relative;
+  min-width: 4px;
+}
+
+.workout-type-bar[data-type="грудь"] { background: #ff6b6b; }
+.workout-type-bar[data-type="спина"] { background: #4ecdc4; }
+.workout-type-bar[data-type="ноги"] { background: #45b7d1; }
+.workout-type-bar[data-type="плечи"] { background: #f9ca24; }
+.workout-type-bar[data-type="руки"] { background: #f0932b; }
+.workout-type-bar[data-type="пресс"] { background: #eb4d4b; }
+.workout-type-bar[data-type="кардио"] { background: #6c5ce7; }
+.workout-type-bar[data-type="другое"] { background: var(--text-muted); }
+
+.workout-type-bar:hover {
+  filter: brightness(1.1);
+  z-index: 1;
+}
+
+.workout-month-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-style: italic;
+  text-align: center;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.workout-month-summary {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+
+.month-stat {
+  text-align: center;
+  flex: 1;
+}
+
+.stat-number {
+  display: block;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-normal);
+  line-height: 1;
+}
+
+.stat-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+/* Справочник упражнений */
+.exercise-library-view {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 16px;
+  margin: 16px 0;
+  background: var(--background-primary);
+}
+
+.exercise-library-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.exercise-library-title {
+  margin: 0;
+  color: var(--text-normal);
+  font-size: 18px;
+}
+
+.exercise-library-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.exercise-btn {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: var(--text-normal);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.exercise-btn:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+
+.exercise-btn-primary {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+.exercise-btn-primary:hover {
+  background: var(--interactive-accent-hover);
+}
+
+.exercise-search-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.exercise-search-input {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 14px;
+}
+
+.exercise-category-filter {
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  font-size: 14px;
+  min-width: 150px;
+}
+
+.exercise-empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.exercise-category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 20px 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--background-modifier-border);
+}
+
+.exercise-category-title {
+  margin: 0;
+  color: var(--text-normal);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.exercise-category-count {
+  background: var(--background-secondary);
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+}
+
+.exercise-category-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.exercise-card {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 16px;
+  transition: all 0.2s ease;
+}
+
+.exercise-card:hover {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.exercise-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+}
+
+.exercise-card-title {
+  margin: 0;
+  color: var(--text-normal);
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.exercise-card-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.exercise-action-btn {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 12px;
+  transition: background 0.2s ease;
+}
+
+.exercise-action-btn:hover {
+  background: var(--background-modifier-hover);
+}
+
+.exercise-delete-btn:hover {
+  background: var(--background-modifier-error);
+  color: var(--text-error);
+}
+
+.exercise-card-info {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.exercise-badge {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+}
+
+.exercise-equipment {
+  background: var(--color-blue);
+}
+
+.exercise-difficulty.exercise-начинающий {
+  background: var(--color-green);
+}
+
+.exercise-difficulty.exercise-средний {
+  background: var(--color-orange);
+}
+
+.exercise-difficulty.exercise-продвинутый {
+  background: var(--color-red);
+}
+
+.exercise-card-description {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+
+.exercise-muscle-groups {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.exercise-muscle-groups strong {
+  color: var(--text-normal);
+}
+
+.exercise-form {
+  padding: 20px;
+}
+
+.exercise-form h4 {
+  margin: 0 0 16px 0;
+  color: var(--text-normal);
+  font-size: 16px;
+}
+
+.exercise-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  margin-bottom: 12px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.exercise-textarea {
+  min-height: 80px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+.exercise-form-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+/* Улучшенные стили для форм упражнений */
+
+.workout-exercise-form {
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+
+.workout-exercise-form h4 {
+  color: var(--text-normal);
+  font-weight: 600;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  padding-bottom: 8px;
+}
+
+.workout-exercise-form label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--text-normal);
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.workout-exercises-container {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  background: var(--background-secondary);
+}
+
+.workout-exercise-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+  background: var(--background-primary);
+}
+
+.workout-exercise-item:last-child {
+  border-bottom: none;
+}
+
+.workout-exercise-info {
+  flex: 1;
+  color: var(--text-normal);
+  font-size: 13px;
+}
+
+.workout-btn-small {
+  padding: 4px 8px;
+  font-size: 11px;
+  margin-left: 4px;
+}
+
+.workout-btn-secondary {
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  margin: 8px;
+}
+
+.workout-btn-secondary:hover {
+  background: var(--background-modifier-hover);
+}
+
+.workout-sets-container {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  padding: 12px;
+  background: var(--background-secondary);
+  margin-bottom: 16px;
+}
+
+.workout-set-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 8px;
+  background: var(--background-primary);
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+}
+
+.workout-set-row span {
+  color: var(--text-normal);
+  font-size: 13px;
+  min-width: fit-content;
+}
+
+.workout-input-small {
+  width: 70px;
+  padding: 4px 8px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.workout-textarea-small {
+  min-height: 50px;
+  resize: vertical;
+}
+
+/* Исправление контрастности для плохо читаемого текста */
+.workout-fullscreen-modal .workout-modal-content {
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+
+.workout-inline-form {
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+
+.workout-input,
+.workout-textarea,
+.workout-input-small,
+.workout-textarea-small {
+  background: var(--background-primary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+}
+
+.workout-input:focus,
+.workout-textarea:focus,
+.workout-input-small:focus,
+.workout-textarea-small:focus {
+  border-color: var(--interactive-accent);
+  box-shadow: 0 0 0 2px rgba(var(--interactive-accent-rgb), 0.2);
+  background: var(--background-primary);
+  color: var(--text-normal);
+}
+
+/* Темная тема - дополнительные исправления */
+.theme-dark .workout-input,
+.theme-dark .workout-textarea,
+.theme-dark .workout-input-small,
+.theme-dark .workout-textarea-small {
+  background: var(--background-primary);
+  color: var(--text-normal);
+  border-color: var(--background-modifier-border);
+}
+
+.theme-dark .workout-input::placeholder,
+.theme-dark .workout-textarea::placeholder,
+.theme-dark .workout-input-small::placeholder,
+.theme-dark .workout-textarea-small::placeholder {
+  color: var(--text-muted);
+}
+
+/* Стили для отображения упражнений */
+.workout-exercises {
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--background-modifier-form-field);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.exercise-summary {
+  color: var(--text-muted);
+  font-style: italic;
+  margin-bottom: 6px;
+  padding: 4px 0;
+  border-bottom: 1px solid var(--background-modifier-border);
+  font-size: 11px;
+}
+
+.exercise-item {
+  display: block;
+  margin-bottom: 6px;
+  padding: 6px 8px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.exercise-item:last-child {
+  margin-bottom: 0;
+}
+
+.exercise-name {
+  font-weight: 600;
+  color: var(--text-normal);
+  font-size: 12px;
+  margin-bottom: 3px;
+  display: block;
+}
+
+.exercise-sets {
+  color: var(--text-muted);
+  font-size: 11px;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.exercise-intensity {
+  color: var(--interactive-accent);
+  font-size: 10px;
+  font-weight: 500;
+  display: inline-block;
+  background: var(--background-secondary);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* Детальная информация о подходах */
+.exercise-set-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin: 2px 0;
+  padding: 2px 4px;
+  background: var(--background-modifier-form-field);
+  border-radius: 3px;
+  border-left: 3px solid var(--interactive-accent);
+}
+
+.exercise-one-rm-info {
+  font-size: 10px;
+  color: var(--text-accent);
+  font-weight: 600;
+  margin-top: 4px;
+  padding: 2px 6px;
+  background: var(--background-modifier-success);
+  border-radius: 3px;
+}
+
+/* Компактный режим для недельного вида */
+.workout-exercises.compact {
+  padding: 4px 6px;
+  margin-top: 4px;
+}
+
+.workout-exercises.compact .exercise-summary {
+  margin-bottom: 0;
+  padding: 2px 0;
+  border-bottom: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.workout-exercises.compact .exercise-item {
+  margin-bottom: 2px;
+  padding: 3px 4px;
+  font-size: 10px;
+}
+
+.workout-exercises.compact .exercise-name {
+  font-size: 10px;
+  margin-bottom: 1px;
+}
+
+.workout-exercises.compact .exercise-sets {
+  font-size: 9px;
+  margin-bottom: 1px;
+}
+
+/* Стили для полей интенсивности и 1ПМ */
+.workout-set-row {
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+
+.exercise-one-rm {
+  margin-top: 8px;
+  padding: 6px 8px;
+  background: var(--background-secondary);
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.exercise-one-rm-date {
+  color: var(--text-muted);
+  font-size: 11px;
+  font-style: italic;
+}
+
+/* Улучшенная разметка для подходов с интенсивностью */
+.workout-set-row {
+  display: grid;
+  grid-template-columns: auto 80px auto 80px auto 80px auto auto;
+  gap: 8px;
+  align-items: center;
+  padding: 8px;
+  background: var(--background-primary);
+  border-radius: 4px;
+  border: 1px solid var(--background-modifier-border);
+  margin-bottom: 6px;
+}
+
+.workout-set-row span {
+  color: var(--text-normal);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+/* Поле для 1ПМ */
+.workout-exercise-form .workout-input[type="number"][placeholder*="1ПМ"] {
+  background: var(--background-secondary);
+  border: 2px solid var(--interactive-accent);
+  font-weight: 500;
+}
+
+.workout-exercise-form .workout-input[type="number"][placeholder*="1ПМ"]:focus {
+  box-shadow: 0 0 0 3px rgba(var(--interactive-accent-rgb), 0.3);
+}
+
+/* Автодополнение для упражнений */
+.workout-input-container {
+  position: relative;
+  width: 100%;
+}
+
+.workout-suggestions-container {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.workout-suggestion-item {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: var(--text-normal);
+  border-bottom: 1px solid var(--background-modifier-border);
+  transition: background 0.2s ease;
+}
+
+.workout-suggestion-item:last-child {
+  border-bottom: none;
+}
+
+.workout-suggestion-item:hover {
+  background: var(--background-modifier-hover);
+}
+
+.workout-suggestion-item:active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+/* Опция создания нового упражнения */
+.workout-suggestion-create {
+  border-top: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+
+.workout-suggestion-create:hover {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+}
+
+.create-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.workout-suggestion-create:hover .create-icon {
+  background: var(--text-on-accent);
+  color: var(--interactive-accent);
+}
+
+.create-text {
+  flex: 1;
+}
+
+/* Drag and Drop */
+.workout-card[draggable="true"] {
+  cursor: move;
+}
+
+.workout-card.workout-dragging {
+  opacity: 0.5;
+  transform: rotate(5deg);
+}
+
+.workout-drop-zone {
+  transition: all 0.2s ease;
+}
+
+.workout-drop-zone.workout-dropping {
+  background: var(--background-modifier-border);
+  border: 2px dashed var(--interactive-accent);
+  border-radius: 8px;
+}
+
+.workout-drop-zone.workout-dropping .workout-empty-day {
+  opacity: 0.7;
+}
+
+.workout-drop-zone.workout-dropping .workout-card {
+  opacity: 0.3;
+}
