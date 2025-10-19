@@ -1,7 +1,7 @@
 {
 	"id": "workout-tracker",
 	"name": "Workout Tracker",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "Визуальный тренировочный дневник с графиками прогресса и планированием.",
 	"author": "TheReshkin",
