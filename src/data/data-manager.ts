@@ -236,9 +236,21 @@ export class DataManager {
    * Добавляет новое упражнение в библиотеку
    */
   async addExercise(name: string, spec: any): Promise<void> {
-    const library = await this.loadExerciseLibrary();
-    library.exercises[name] = spec;
-    await this.saveExerciseLibrary(library);
+    try {
+      // Ensure library file exists; if not, create a base file so users can add exercises
+      const file = this.app.vault.getAbstractFileByPath(this.exerciseLibraryFile);
+      if (!file) {
+        await this.createExerciseLibraryFile();
+      }
+
+      const library = await this.loadExerciseLibrary();
+      if (!library.exercises) library.exercises = {};
+      library.exercises[name] = spec;
+      await this.saveExerciseLibrary(library);
+    } catch (error) {
+      console.error('Error adding exercise to library:', error);
+      throw error;
+    }
   }
 
   /**
