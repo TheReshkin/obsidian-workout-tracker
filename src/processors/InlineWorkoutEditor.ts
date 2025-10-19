@@ -468,47 +468,47 @@ export class InlineWorkoutEditor {
     const renderSets = () => {
       setsContainer.empty();
       setInputs.length = 0;
-      
+
       sets.forEach((set, index) => {
         const setRow = setsContainer.createDiv({ cls: 'workout-set-row' });
-        
+
         setRow.createEl('span', { text: `Подход ${index + 1}:` });
-        
+
         const repsInput = setRow.createEl('input', {
           type: 'number',
-          value: set.reps.toString(),
+          value: (set.reps !== undefined && set.reps !== null && set.reps !== 0) ? set.reps.toString() : '',
           placeholder: 'Повторы',
           cls: 'workout-input workout-input-small'
         });
-        
+
         setRow.createEl('span', { text: 'раз' });
-        
+
         const weightInput = setRow.createEl('input', {
           type: 'number',
-          value: (set.weight || 0).toString(),
+          value: (set.weight !== undefined && set.weight !== null && set.weight !== 0) ? set.weight.toString() : '',
           placeholder: 'Вес',
           cls: 'workout-input workout-input-small'
         });
-        
+
         setRow.createEl('span', { text: 'кг' });
 
         // Поле интенсивности
         const intensityInput = setRow.createEl('input', {
           type: 'number',
-          value: (set.intensity || 0).toString(),
+          value: (set.intensity !== undefined && set.intensity !== null && set.intensity !== 0) ? set.intensity.toString() : '',
           placeholder: '%',
           cls: 'workout-input workout-input-small'
         });
         intensityInput.min = '0';
         intensityInput.max = '100';
-        
+
         setRow.createEl('span', { text: '% от 1ПМ' });
-        
-        // Обработчики для автоматического расчета
+
+        // Обработчики для автоматического расчета — только при валидных числах
         weightInput.addEventListener('input', () => {
-          const weight = parseFloat(weightInput.value) || 0;
-          const oneRM = parseFloat(oneRMInput.value) || 0;
-          if (oneRM > 0) {
+          const weight = weightInput.valueAsNumber; // NaN если пусто/нечисло
+          const oneRM = oneRMInput.valueAsNumber;
+          if (Number.isFinite(oneRM) && Number.isFinite(weight)) {
             const intensity = calculateIntensity(weight, oneRM);
             intensityInput.value = intensity.toString();
             set.intensity = intensity;
@@ -516,9 +516,9 @@ export class InlineWorkoutEditor {
         });
 
         intensityInput.addEventListener('input', () => {
-          const intensity = parseFloat(intensityInput.value) || 0;
-          const oneRM = parseFloat(oneRMInput.value) || 0;
-          if (oneRM > 0 && intensity >= 0 && intensity <= 100) {
+          const intensity = intensityInput.valueAsNumber;
+          const oneRM = oneRMInput.valueAsNumber;
+          if (Number.isFinite(oneRM) && Number.isFinite(intensity) && intensity >= 0 && intensity <= 100) {
             const weight = calculateWeight(intensity, oneRM);
             weightInput.value = weight.toString();
             set.weight = weight;
@@ -526,60 +526,62 @@ export class InlineWorkoutEditor {
         });
 
         oneRMInput.addEventListener('input', () => {
-          // Пересчитать все интенсивности при изменении 1ПМ
+          // Пересчитать все интенсивности при изменении 1ПМ, только если 1ПМ валиден
+          const oneRMVal = oneRMInput.valueAsNumber;
+          if (!Number.isFinite(oneRMVal) || oneRMVal <= 0) return;
+
           sets.forEach((s, i) => {
             if (s.weight && s.weight > 0) {
-              const oneRM = parseFloat(oneRMInput.value) || 0;
-              if (oneRM > 0) {
-                const intensity = calculateIntensity(s.weight, oneRM);
-                setInputs[i]?.intensityInput && (setInputs[i].intensityInput.value = intensity.toString());
-                s.intensity = intensity;
+              const intensity = calculateIntensity(s.weight, oneRMVal);
+              if (setInputs[i]?.intensityInput) {
+                setInputs[i].intensityInput.value = intensity.toString();
               }
+              s.intensity = intensity;
             }
           });
         });
-        
+
         if (sets.length > 1) {
           const deleteSetBtn = setRow.createEl('button', {
             text: '✕',
             cls: 'workout-btn workout-btn-small workout-btn-danger'
           });
-          
+
           deleteSetBtn.addEventListener('click', () => {
-            // Сохраняем текущие значения перед удалением
+            // Сохраняем текущие значения перед удалением (преобразуем пустые в 0)
             setInputs.forEach((input, i) => {
               if (sets[i] && i !== index) { // не сохраняем удаляемый подход
-                sets[i].reps = parseInt(input.repsInput.value) || 0;
-                sets[i].weight = parseFloat(input.weightInput.value) || 0;
-                sets[i].intensity = parseFloat(input.intensityInput.value) || 0;
+                sets[i].reps = Number.isFinite(input.repsInput.valueAsNumber) ? input.repsInput.valueAsNumber : 0;
+                sets[i].weight = Number.isFinite(input.weightInput.valueAsNumber) ? input.weightInput.valueAsNumber : 0;
+                sets[i].intensity = Number.isFinite(input.intensityInput.valueAsNumber) ? input.intensityInput.valueAsNumber : 0;
               }
             });
-            
+
             sets.splice(index, 1);
             renderSets();
           });
         }
-        
+
         setInputs.push({ repsInput, weightInput, intensityInput });
       });
-      
+
       // Кнопка добавления подхода
       const addSetBtn = setsContainer.createEl('button', {
         text: 'Добавить подход',
         cls: 'workout-btn workout-btn-secondary'
       });
-      
+
       addSetBtn.addEventListener('click', () => {
         // Сохраняем текущие значения перед добавлением нового подхода
         setInputs.forEach((input, index) => {
           if (sets[index]) {
-            sets[index].reps = parseInt(input.repsInput.value) || 0;
-            sets[index].weight = parseFloat(input.weightInput.value) || 0;
-            sets[index].intensity = parseFloat(input.intensityInput.value) || 0;
+            sets[index].reps = Number.isFinite(input.repsInput.valueAsNumber) ? input.repsInput.valueAsNumber : 0;
+            sets[index].weight = Number.isFinite(input.weightInput.valueAsNumber) ? input.weightInput.valueAsNumber : 0;
+            sets[index].intensity = Number.isFinite(input.intensityInput.valueAsNumber) ? input.intensityInput.valueAsNumber : 0;
           }
         });
-        
-        // Добавляем новый подход
+
+        // Добавляем новый подход с пустыми значениями
         sets.push({ reps: 0, weight: 0, intensity: 0 });
         renderSets();
       });

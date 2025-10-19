@@ -1,59 +1,33 @@
-# Workout Tracker Plugin for Obsidian
+# Obsidian Workout Tracker Plugin
 
-Comprehensive workout tracking plugin for Obsidian that allows you to log, track, and visualize your fitness progress directly in your markdown notes.
+Плагин для отслеживания тренировок в Obsidian с интерактивными формами и календарным представлением.
 
-## 🏋️ Key Features
+## 🚀 Главная особенность - Работа прямо в файлах!
 
-### 📊 Interactive Inline Interface
-**Works directly in your markdown files** - no separate panels needed! Add a `workout` code block and get a full interactive calendar interface.
+**Этот плагин работает ПРЯМО В ВАШИХ MARKDOWN ФАЙЛАХ**, а не в отдельных панелях. Добавьте блок с тренировками и получите полноценный интерактивный интерфейс!
 
-### � Smart Exercise Management
-- **Exercise Library**: Pre-loaded with 13+ common exercises
-- **Autocomplete**: Smart suggestions from library and workout history  
-- **Custom Exercises**: Create new exercises with muscle group categorization
-- **1RM Tracking**: One-rep maximum tracking with intensity calculations
-
-### 🗓️ Multiple View Modes
-- **Calendar View**: Week, Month, and Year views for workout planning
-- **Drag & Drop**: Move workouts between dates effortlessly
-- **Visual Indicators**: Color-coded workout types and current date highlighting
-- **Progress Tracking**: Visual workout statistics and trends
-
-### 📝 Seamless Integration
-- **Markdown Native**: Uses code blocks (`workout`, `exercises`) in your notes
-- **Auto-save**: Automatic data persistence to your files
-- **Theme Compatible**: Works with all Obsidian themes
-- **Mobile Friendly**: Responsive design for mobile devices
-
-## 🚀 Quick Start
-
-### Installation
-1. Copy plugin files to `.obsidian/plugins/workout-tracker/` in your vault
-2. Enable plugin in Obsidian Settings → Community Plugins  
-3. Run command "Create Basic Exercise Library" (Ctrl/Cmd+P)
-
-### Basic Usage
-
-Add a workout block to any note:
-
+```markdown
 ```workout
 {
-  "2024-10-12": {
-    "type": "Strength",
-    "status": "completed", 
+  "2025-01-15": {
+    "status": "done", 
+    "type": "грудь",
     "exercises": [
       {
-        "name": "Bench Press",
+        "name": "Жим лежа",
         "sets": [
-          {"reps": 8, "weight": 80, "intensity": 85}
+          { "reps": 10, "weight": 80 },
+          { "reps": 8, "weight": 85 }
         ]
       }
-    ]
+    ],
+    "notes": "Отличная тренировка"
   }
 }
 ```
+```
 
-The code block transforms into an interactive calendar interface!
+↓ Превращается в интерактивный календарь ↓
 
 ## 🎯 Возможности
 
