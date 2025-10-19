@@ -704,6 +704,38 @@ p {
   width: 95%;
 }
 
+/* Larger fullscreen modal variant for editing workouts */
+.workout-fullscreen-modal.workout-fullscreen-large .workout-modal-content {
+  max-width: 1000px; /* wider for comfortable editing */
+  width: 96%;
+  max-height: 94vh; /* allow more vertical space */
+}
+
+/* When large modal is active, allow exercises list to expand more */
+.workout-fullscreen-modal.workout-fullscreen-large .workout-exercises-container {
+  max-height: 60vh; /* big scroll area for exercises */
+  overflow-y: auto;
+}
+
+/* Drag & drop visuals */
+.workout-drop-indicator {
+  transition: all 120ms ease;
+  opacity: 0.95;
+  transform-origin: center;
+}
+
+.workout-exercise-draggable.workout-dragging {
+  opacity: 0.85;
+  transform: translateY(-2px) scale(1.005);
+  transition: transform 150ms ease, opacity 150ms ease;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+}
+
+.workout-drop-target {
+  transition: background 120ms ease, border-color 120ms ease;
+  background: rgba(0,0,0,0.02);
+}
+
 .workout-inline-form {
   padding: 20px;
 }

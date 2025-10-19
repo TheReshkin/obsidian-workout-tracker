@@ -77,13 +77,75 @@ export class InlineWorkoutEditor {
     
     const renderExercises = () => {
       exercisesContainer.empty();
-      
+
+      // visual drop indicator
+      const dropIndicator = exercisesContainer.createDiv({ cls: 'workout-drop-indicator' });
+      dropIndicator.style.display = 'none';
+      dropIndicator.style.height = '6px';
+      dropIndicator.style.margin = '6px 0';
+      dropIndicator.style.borderRadius = '3px';
+      dropIndicator.style.background = 'var(--interactive-accent)';
+
       if (tempWorkout.exercises && tempWorkout.exercises.length > 0) {
         tempWorkout.exercises.forEach((exercise, index) => {
           const exerciseEl = exercisesContainer.createDiv({ cls: 'workout-exercise-item' });
-          
+
+          // Numbering for clarity
           const exerciseInfo = exerciseEl.createDiv({ cls: 'workout-exercise-info' });
-          exerciseInfo.textContent = `${exercise.name}: ${exercise.sets.length} подх.`;
+          exerciseInfo.textContent = `${index + 1}. ${exercise.name}: ${exercise.sets.length} подх.`;
+
+          // Make exercise draggable to reorder
+          exerciseEl.draggable = true;
+          exerciseEl.dataset.index = String(index);
+          exerciseEl.classList.add('workout-exercise-draggable');
+
+          exerciseEl.addEventListener('dragstart', (e) => {
+            (e.dataTransfer as DataTransfer).setData('text/plain', String(index));
+            exerciseEl.classList.add('workout-dragging');
+          });
+
+          exerciseEl.addEventListener('dragend', () => {
+            exerciseEl.classList.remove('workout-dragging');
+            dropIndicator.style.display = 'none';
+          });
+
+          exerciseEl.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            exerciseEl.classList.add('workout-drop-target');
+            const rect = exerciseEl.getBoundingClientRect();
+            const mid = rect.top + rect.height / 2;
+            // determine desired insertion point (before or after this element)
+            const desiredBefore = ((e as DragEvent).clientY < mid) ? exerciseEl : exerciseEl.nextSibling;
+            // only move indicator if it's not already at the desired position
+            if (dropIndicator.nextSibling !== desiredBefore) {
+              exercisesContainer.insertBefore(dropIndicator, desiredBefore);
+            }
+            if (dropIndicator.style.display !== 'block') dropIndicator.style.display = 'block';
+          });
+
+          exerciseEl.addEventListener('dragleave', () => {
+            exerciseEl.classList.remove('workout-drop-target');
+            // don't hide immediately here — let dragend/drop handle hiding to avoid flicker when moving between items
+          });
+
+          exerciseEl.addEventListener('drop', (e) => {
+            e.preventDefault();
+            exerciseEl.classList.remove('workout-drop-target');
+            dropIndicator.style.display = 'none';
+            const src = (e.dataTransfer as DataTransfer).getData('text/plain');
+            const srcIndex = parseInt(src, 10);
+            const children = Array.from(exercisesContainer.querySelectorAll('.workout-exercise-item')) as HTMLElement[];
+            let destIndex = children.indexOf(exerciseEl);
+            const rect = exerciseEl.getBoundingClientRect();
+            const mid = rect.top + rect.height / 2;
+            if ((e as DragEvent).clientY >= mid) destIndex = destIndex + 1;
+            if (!isNaN(srcIndex) && !isNaN(destIndex) && srcIndex !== destIndex) {
+              const item = tempWorkout.exercises!.splice(srcIndex, 1)[0];
+              const adjustedIndex = srcIndex < destIndex ? destIndex - 1 : destIndex;
+              tempWorkout.exercises!.splice(adjustedIndex, 0, item);
+              renderExercises();
+            }
+          });
           
           const editBtn = exerciseEl.createEl('button', {
             text: 'Изменить',
@@ -157,6 +219,13 @@ export class InlineWorkoutEditor {
    */
   showEditWorkoutForm(date: string, workout: WorkoutEntry) {
     const modal = this.createInlineModal();
+    // mark modal as large so CSS increases width/height for easier editing
+    try {
+      const modalContainer = (modal as any).modalContainer || modal.closest('.workout-fullscreen-modal');
+      modalContainer && modalContainer.classList && modalContainer.classList.add('workout-fullscreen-large');
+    } catch (e) {
+      // ignore if not available
+    }
     const form = modal.createDiv({ cls: 'workout-inline-form' });
 
     form.createEl('h4', { text: `Редактировать тренировку ${date}` });
@@ -195,30 +264,92 @@ export class InlineWorkoutEditor {
     
     // Показать существующие упражнения
     if (workout.exercises && workout.exercises.length > 0) {
+      // drop indicator
+      const dropIndicator = exercisesContainer.createDiv({ cls: 'workout-drop-indicator' });
+      dropIndicator.style.display = 'none';
+      dropIndicator.style.height = '6px';
+      dropIndicator.style.margin = '6px 0';
+      dropIndicator.style.borderRadius = '3px';
+      dropIndicator.style.background = 'var(--interactive-accent)';
+
       workout.exercises.forEach((exercise, index) => {
         const exerciseEl = exercisesContainer.createDiv({ cls: 'workout-exercise-item' });
-        
+
         const exerciseInfo = exerciseEl.createDiv({ cls: 'workout-exercise-info' });
-        exerciseInfo.textContent = `${exercise.name}: ${exercise.sets.length} подх.`;
-        
+        exerciseInfo.textContent = `${index + 1}. ${exercise.name}: ${exercise.sets.length} подх.`;
+
         const editBtn = exerciseEl.createEl('button', {
           text: 'Изменить',
           cls: 'workout-btn workout-btn-small'
         });
-        
+
         const deleteBtn = exerciseEl.createEl('button', {
           text: 'Удалить',
           cls: 'workout-btn workout-btn-small workout-btn-danger'
         });
-        
+
         editBtn.addEventListener('click', () => {
           this.showExerciseForm(date, workout, index);
         });
-        
+
         deleteBtn.addEventListener('click', () => {
           if (confirm(`Удалить упражнение "${exercise.name}"?`)) {
             workout.exercises!.splice(index, 1);
             this.updateWorkout(date, workout);
+            this.hideModal(modal);
+            this.showEditWorkoutForm(date, workout);
+          }
+        });
+
+        // Make exercise draggable to reorder
+        exerciseEl.draggable = true;
+        exerciseEl.dataset.index = String(index);
+        exerciseEl.classList.add('workout-exercise-draggable');
+
+        exerciseEl.addEventListener('dragstart', (e) => {
+          (e.dataTransfer as DataTransfer).setData('text/plain', String(index));
+          exerciseEl.classList.add('workout-dragging');
+        });
+
+        exerciseEl.addEventListener('dragend', () => {
+          exerciseEl.classList.remove('workout-dragging');
+          dropIndicator.style.display = 'none';
+        });
+
+        exerciseEl.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          exerciseEl.classList.add('workout-drop-target');
+          const rect = exerciseEl.getBoundingClientRect();
+          const mid = rect.top + rect.height / 2;
+          const desiredBefore = ((e as DragEvent).clientY < mid) ? exerciseEl : exerciseEl.nextSibling;
+          if (dropIndicator.nextSibling !== desiredBefore) {
+            exercisesContainer.insertBefore(dropIndicator, desiredBefore);
+          }
+          if (dropIndicator.style.display !== 'block') dropIndicator.style.display = 'block';
+        });
+
+        exerciseEl.addEventListener('dragleave', () => {
+          exerciseEl.classList.remove('workout-drop-target');
+          // do not hide immediately to reduce flicker
+        });
+
+        exerciseEl.addEventListener('drop', async (e) => {
+          e.preventDefault();
+          exerciseEl.classList.remove('workout-drop-target');
+          dropIndicator.style.display = 'none';
+          const src = (e.dataTransfer as DataTransfer).getData('text/plain');
+          const srcIndex = parseInt(src, 10);
+          const children = Array.from(exercisesContainer.querySelectorAll('.workout-exercise-item')) as HTMLElement[];
+          let destIndex = children.indexOf(exerciseEl);
+          const rect = exerciseEl.getBoundingClientRect();
+          const mid = rect.top + rect.height / 2;
+          if ((e as DragEvent).clientY >= mid) destIndex = destIndex + 1;
+          if (!isNaN(srcIndex) && !isNaN(destIndex) && srcIndex !== destIndex) {
+            const item = workout.exercises!.splice(srcIndex, 1)[0];
+            const adjustedIndex = srcIndex < destIndex ? destIndex - 1 : destIndex;
+            workout.exercises!.splice(adjustedIndex, 0, item);
+            // Save new order and re-open editor to reflect changes
+            await this.updateWorkout(date, workout);
             this.hideModal(modal);
             this.showEditWorkoutForm(date, workout);
           }
@@ -334,7 +465,6 @@ export class InlineWorkoutEditor {
     } catch (error) {
       console.error('Error getting exercise from library:', error);
     }
-    
     return null;
   }
 
