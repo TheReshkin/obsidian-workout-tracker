@@ -707,8 +707,28 @@ export class WorkoutMarkdownProcessor {
       muscleStats.createEl('h4', { text: 'По группам мышц' });
 
       Object.entries(stats.byMuscleGroup).forEach(([group, count]) => {
-        const groupItem = muscleStats.createDiv({ cls: 'muscle-group-item' });
-        groupItem.createSpan({ text: group, cls: 'group-name' });
+  const groupItem = muscleStats.createDiv({ cls: 'muscle-group-item' });
+        // render group name as a pill for better contrast
+        const span = groupItem.createSpan({ text: group, cls: 'group-name pill' });
+        // if a color is defined in the shared type map, apply it and pick readable text color
+        try {
+          // import of MUSCLE_GROUP_COLORS isn't available here; try reading from types map via global require if present
+          const mgColors: any = require('../types').MUSCLE_GROUP_COLORS;
+          const bg = mgColors && mgColors[group];
+          if (bg) {
+            span.style.background = bg;
+            const c = bg.replace('#','');
+            if (/^[0-9A-Fa-f]{6}$/.test(c)) {
+              const r = parseInt(c.substring(0,2),16);
+              const g = parseInt(c.substring(2,4),16);
+              const b = parseInt(c.substring(4,6),16);
+              const luminance = (0.299*r + 0.587*g + 0.114*b) / 255;
+              span.style.color = luminance > 0.6 ? 'var(--text-normal)' : 'var(--text-on-accent)';
+            }
+          }
+        } catch (e) {
+          // ignore if require fails in bundler
+        }
         groupItem.createSpan({ text: count.toString(), cls: 'group-count' });
       });
     }
@@ -772,25 +792,26 @@ export class WorkoutMarkdownProcessor {
         // Название упражнения
         exerciseEl.createDiv({ text: exercise.name, cls: 'exercise-name' });
         
-        // Детальная информация о каждом подходе
+        // Детальная информация о каждом подходе — показываем как нумерованный список
         if (exercise.sets && exercise.sets.length > 0) {
-          exercise.sets.forEach((set, index) => {
-            const setInfo = exerciseEl.createDiv({ cls: 'exercise-set-detail' });
-            let setText = `Подход ${index + 1}: ${set.reps} повт.`;
-            
+          const ol = exerciseEl.createEl('ol', { cls: 'exercise-sets-list' });
+          exercise.sets.forEach((set) => {
+            const li = ol.createEl('li', { cls: 'exercise-set-detail' });
+            let setText = `${set.reps} повт.`;
+
             if (set.weight && set.weight > 0) {
               setText += ` × ${set.weight} кг`;
             }
-            
+
             if (set.intensity && set.intensity > 0) {
               setText += ` (${Math.round(set.intensity)}%)`;
             }
-            
+
             if (set.notes) {
               setText += ` - ${set.notes}`;
             }
-            
-            setInfo.textContent = setText;
+
+            li.textContent = setText;
           });
         }
         

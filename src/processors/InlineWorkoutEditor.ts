@@ -49,12 +49,39 @@ export class InlineWorkoutEditor {
       const option = typeSelect.createEl('option', { value: type, text: type });
       if (type === existingWorkout?.type) option.selected = true;
     });
+    // mark empty selects for contrast
+    const markEmpty = (el: HTMLSelectElement) => {
+      if (!el.value) el.classList.add('is-empty'); else el.classList.remove('is-empty');
+    };
+    markEmpty(typeSelect as HTMLSelectElement);
+    typeSelect.addEventListener('change', () => markEmpty(typeSelect as HTMLSelectElement));
 
     // Статус
     const statusSelect = form.createEl('select', { cls: 'workout-input' });
-    statusSelect.createEl('option', { value: 'planned', text: 'Запланировано' });
+  statusSelect.createEl('option', { value: 'planned', text: 'Запланировано' });
     statusSelect.createEl('option', { value: 'done', text: 'Выполнено' });
-    statusSelect.value = existingWorkout?.status || 'planned';
+    statusSelect.createEl('option', { value: 'skipped', text: 'Пропущено' });
+    statusSelect.createEl('option', { value: 'illness', text: 'Болезнь' });
+  statusSelect.value = existingWorkout?.status || 'planned';
+  markEmpty(statusSelect as HTMLSelectElement);
+  statusSelect.addEventListener('change', () => markEmpty(statusSelect as HTMLSelectElement));
+
+    // apply status class to the select itself so the field is colorized
+    try {
+      const { statusToClass, statusToLabel } = require('../utils/status-utils');
+      const initClass = statusToClass(statusSelect.value as WorkoutStatus);
+      statusSelect.classList.add(initClass);
+      statusSelect.setAttribute('title', statusToLabel(statusSelect.value as WorkoutStatus));
+      statusSelect.addEventListener('change', () => {
+        const s = statusSelect.value as WorkoutStatus;
+        // remove previous status-* classes
+        ['status-planned','status-done','status-skipped','status-illness'].forEach(c => statusSelect.classList.remove(c));
+        statusSelect.classList.add(statusToClass(s));
+        statusSelect.setAttribute('title', statusToLabel(s));
+      });
+    } catch (e) {
+      // ignore if helper not available
+    }
 
     // Заметки
     const notesInput = form.createEl('textarea', {
@@ -93,6 +120,8 @@ export class InlineWorkoutEditor {
           // Numbering for clarity
           const exerciseInfo = exerciseEl.createDiv({ cls: 'workout-exercise-info' });
           exerciseInfo.textContent = `${index + 1}. ${exercise.name}: ${exercise.sets.length} подх.`;
+
+          // per-exercise status indicator removed — using workout-level status badge instead
 
           // Make exercise draggable to reorder
           exerciseEl.draggable = true;
@@ -248,6 +277,30 @@ export class InlineWorkoutEditor {
       const option = statusSelect.createEl('option', { value: status.value, text: status.text });
       if (status.value === workout.status) option.selected = true;
     });
+    // mark empty selects for contrast
+    const markEmptyEdit = (el: HTMLSelectElement) => {
+      if (!el.value) el.classList.add('is-empty'); else el.classList.remove('is-empty');
+    };
+    markEmptyEdit(typeSelect as HTMLSelectElement);
+    markEmptyEdit(statusSelect as HTMLSelectElement);
+    typeSelect.addEventListener('change', () => markEmptyEdit(typeSelect as HTMLSelectElement));
+    statusSelect.addEventListener('change', () => markEmptyEdit(statusSelect as HTMLSelectElement));
+
+    // apply status class to the select itself so the field is colorized
+    try {
+      const { statusToClass, statusToLabel } = require('../utils/status-utils');
+      const initClass = statusToClass(statusSelect.value as WorkoutStatus);
+      statusSelect.classList.add(initClass);
+      statusSelect.setAttribute('title', statusToLabel(statusSelect.value as WorkoutStatus));
+      statusSelect.addEventListener('change', () => {
+        const s = statusSelect.value as WorkoutStatus;
+        ['status-planned','status-done','status-skipped','status-illness'].forEach(c => statusSelect.classList.remove(c));
+        statusSelect.classList.add(statusToClass(s));
+        statusSelect.setAttribute('title', statusToLabel(s));
+      });
+    } catch (e) {
+      // ignore
+    }
 
     // Заметки
     const notesInput = form.createEl('textarea', {
@@ -277,6 +330,8 @@ export class InlineWorkoutEditor {
 
         const exerciseInfo = exerciseEl.createDiv({ cls: 'workout-exercise-info' });
         exerciseInfo.textContent = `${index + 1}. ${exercise.name}: ${exercise.sets.length} подх.`;
+
+        // per-exercise status indicator removed — prefer workout-level status badge
 
         const editBtn = exerciseEl.createEl('button', {
           text: 'Изменить',

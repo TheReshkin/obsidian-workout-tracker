@@ -17,6 +17,7 @@ export interface Exercise {
   sets: WorkoutSet[];
   notes?: string;
   currentOneRM?: number; // текущий 1ПМ для расчета интенсивности
+  status?: WorkoutStatus; // optional per-exercise status
 }
 
 export interface WorkoutEntry {
@@ -54,6 +55,8 @@ export interface ExerciseSpec {
   is_cardio?: boolean;
   oneRMHistory?: OneRMRecord[]; // история 1ПМ для данного упражнения
   currentOneRM?: number; // текущий 1ПМ
+  // optional background color for labels/pills (hex or CSS color string)
+  labelBackground?: string;
 }
 
 export interface ExerciseLibrary {

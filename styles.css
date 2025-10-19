@@ -615,8 +615,93 @@ p {
 
 .stat-label,
 .group-name {
-  color: var(--text-muted);
+  color: var(--text-normal);
   font-size: 12px;
+  font-weight: 600;
+}
+
+/* Exercise status badge in editor and read-only */
+.exercise-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-on-accent);
+  cursor: pointer;
+  margin-left: 8px;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+.exercise-status-badge.status-planned { background: #007BFF; }
+.exercise-status-badge.status-done { background: #28A745; }
+.exercise-status-badge.status-skipped { background: #FFC107; color: var(--text-normal); }
+.exercise-status-badge.status-illness { background: #DC3545; }
+
+.workout-exercise-info { display:inline-block; vertical-align: middle; }
+
+/* Badge representing overall workout status inside editor forms */
+.workout-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-left: 8px;
+  color: white;
+}
+.workout-status-badge.status-planned { background: #007BFF; }
+.workout-status-badge.status-done { background: #28A745; }
+.workout-status-badge.status-skipped { background: #FFC107; color: var(--text-normal); }
+.workout-status-badge.status-illness { background: #DC3545; }
+
+/* Colorize the status select field directly to avoid duplicate tags */
+select.workout-input.status-planned {
+  background: rgba(0,123,255,0.08); /* slightly stronger blue tint */
+  border-color: #007BFF;
+  color: var(--text-normal) !important;
+}
+select.workout-input.status-done {
+  background: rgba(40,167,69,0.08); /* slightly stronger green tint */
+  border-color: #28A745;
+  color: var(--text-normal) !important;
+}
+select.workout-input.status-skipped {
+  background: rgba(255,193,7,0.08); /* slightly stronger amber tint */
+  border-color: #FFC107;
+  color: var(--text-normal) !important;
+}
+select.workout-input.status-illness {
+  background: rgba(220,53,69,0.08); /* slightly stronger red tint */
+  border-color: #DC3545;
+  color: var(--text-normal) !important;
+}
+
+/* Higher contrast for unselected fields to improve readability */
+.workout-input.is-empty {
+  background: rgba(0,0,0,0.8);
+  border-color: rgba(0,0,0,0.8);
+  color: var(--text-normal) !important;
+}
+.theme-dark .workout-input.is-empty {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.06);
+  color: var(--text-normal) !important;
+}
+
+
+/* Optional pill for muscle group name to ensure contrast on colored backgrounds */
+.group-name.pill {
+  display: inline-block;
+  padding: 2px 8px;
+  background: var(--background-secondary);
+  border-radius: 999px;
+  color: var(--text-normal);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
 .stat-value,
@@ -1259,6 +1344,30 @@ p {
   text-transform: uppercase;
 }
 
+/* Improve contrast for small colored badges and type bars */
+.exercise-badge,
+.workout-type-bar,
+.workout-month .workout-type-bar,
+.exercise-difficulty,
+.workout-nav-today {
+  color: var(--text-on-accent);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.55);
+}
+
+/* For light/yellow backgrounds (плечи) use dark text for readability */
+.workout-type-bar[data-type="плечи"],
+.exercise-difficulty.exercise-начинающий[data-bg="light-yellow"] {
+  color: var(--text-normal) !important;
+  text-shadow: none !important;
+}
+
+/* For other light-ish backgrounds (green/teal) ensure darker text if needed */
+.workout-type-bar[data-type="спина"],
+.workout-type-bar[data-type="ноги"] {
+  color: var(--text-normal) !important;
+  text-shadow: none !important;
+}
+
 .exercise-equipment {
   background: var(--color-blue);
 }
@@ -1606,6 +1715,31 @@ p {
   color: var(--text-muted);
   font-size: 11px;
   font-style: italic;
+}
+
+/* Read-only small badge/area for displayed 1ПМ value (in cards and lists) */
+.exercise-one-rm-info {
+  display: inline-block;
+  padding: 6px 10px;
+  margin-top: 6px;
+  border-radius: 6px;
+  background: rgba(0,0,0,0.04);
+  border: 1px solid var(--background-modifier-border);
+  color: var(--text-normal);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.theme-dark .exercise-one-rm-info {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.06);
+  color: var(--text-normal);
+}
+
+/* If multiple pieces of meta are shown, separate them slightly */
+.exercise-one-rm + .exercise-one-rm-info,
+.exercise-one-rm-info + .exercise-one-rm {
+  margin-left: 8px;
 }
 
 /* Улучшенная разметка для подходов с интенсивностью */

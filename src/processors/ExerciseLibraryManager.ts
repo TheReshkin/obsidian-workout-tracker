@@ -192,7 +192,24 @@ export class ExerciseLibraryManager {
     if (exercise.muscleGroups && exercise.muscleGroups.length > 0) {
       const muscleGroups = card.createDiv({ cls: 'exercise-muscle-groups' });
       muscleGroups.createEl('strong', { text: 'Мышечные группы: ' });
-      muscleGroups.createSpan({ text: exercise.muscleGroups.join(', ') });
+      // render each muscle group as a pill for better contrast
+      exercise.muscleGroups.forEach(mg => {
+        const span = muscleGroups.createSpan({ text: mg, cls: 'group-name pill' });
+        span.style.marginRight = '6px';
+        // apply label background from exercise spec if provided
+        if (exercise.labelBackground) {
+          span.style.background = exercise.labelBackground;
+          // choose readable text color based on background luminance
+          const c = exercise.labelBackground.replace('#','');
+          if (/^[0-9A-Fa-f]{6}$/.test(c)) {
+            const r = parseInt(c.substring(0,2),16);
+            const g = parseInt(c.substring(2,4),16);
+            const b = parseInt(c.substring(4,6),16);
+            const luminance = (0.299*r + 0.587*g + 0.114*b) / 255;
+            span.style.color = luminance > 0.6 ? 'var(--text-normal)' : 'var(--text-on-accent)';
+          }
+        }
+      });
     }
 
     if (exercise.currentOneRM) {
