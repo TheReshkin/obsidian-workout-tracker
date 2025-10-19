@@ -82,7 +82,7 @@ export const WorkoutTrackerApp: React.FC<WorkoutTrackerAppProps> = ({ plugin }) 
 
     switch (currentView) {
       case 'week':
-        return <WeekView {...commonProps} />;
+        return <WeekView {...commonProps} plugin={plugin} />;
       case 'month':
         return <MonthView {...commonProps} />;
       case 'year':
@@ -92,7 +92,7 @@ export const WorkoutTrackerApp: React.FC<WorkoutTrackerAppProps> = ({ plugin }) 
       case 'spec':
         return <SpecView {...commonProps} />;
       default:
-        return <WeekView {...commonProps} />;
+        return <WeekView {...commonProps} plugin={plugin} />;
     }
   };
 
@@ -112,6 +112,13 @@ export const WorkoutTrackerApp: React.FC<WorkoutTrackerAppProps> = ({ plugin }) 
               title="Быстро добавить тренировку"
             >
               ➕ Тренировка
+            </button>
+            <button
+              className="workout-action-btn"
+              onClick={() => (plugin as any).openSingleDayView && (plugin as any).openSingleDayView(selectedDate)}
+              title="Открыть однодневный вид"
+            >
+              🗓️ Один день
             </button>
             <button 
               className="workout-action-btn"

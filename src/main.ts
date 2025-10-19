@@ -34,6 +34,19 @@ export default class WorkoutTrackerPlugin extends Plugin {
     this.markdownProcessor = new WorkoutMarkdownProcessor(this);
     this.markdownProcessor.register();
 
+    // expose helper for opening single-day view via UI components
+    (this as any).openSingleDayView = async (date: string) => {
+      try {
+        // create a temporary InlineWorkoutEditor to render modal
+        const workoutData = await this.dataManager.loadWorkoutData();
+        const InlineEditorModule = await import('./processors/InlineWorkoutEditor');
+        const editor = new InlineEditorModule.InlineWorkoutEditor(this, document.body as unknown as HTMLElement, workoutData || {}, {} as any, '');
+        await editor.showSingleDayView(date);
+      } catch (e) {
+        console.error('Failed to open single-day view:', e);
+      }
+    };
+
     // Добавляем команды
     this.addCommand({
       id: 'create-workout-file',
@@ -64,6 +77,17 @@ export default class WorkoutTrackerPlugin extends Plugin {
       name: 'Создать базовую библиотеку упражнений',
       callback: () => {
         this.initExerciseLibrary();
+      }
+    });
+
+    // Command to open single-day view for the currently selected date in the UI
+    this.addCommand({
+      id: 'open-single-day-view',
+      name: 'Открыть однодневный вид (Single-day view)',
+      callback: () => {
+        // plugin UI components can call plugin.openSingleDayView(date)
+        // Default behavior: open today's date
+        (this as any).openSingleDayView && (this as any).openSingleDayView(new Date().toISOString().split('T')[0]);
       }
     });
 

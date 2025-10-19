@@ -490,6 +490,57 @@ export class InlineWorkoutEditor {
   }
 
   /**
+   * Показывает однодневный вид для удобного просмотра и редактирования всех упражнений дня
+   */
+  async showSingleDayView(date: string) {
+    const modal = this.createInlineModal();
+    try {
+      const modalContainer = (modal as any).modalContainer || modal.closest('.workout-fullscreen-modal');
+      modalContainer && modalContainer.classList && modalContainer.classList.add('workout-fullscreen-large');
+    } catch (e) {}
+
+    const form = modal.createDiv({ cls: 'single-day-view' });
+    form.createEl('h3', { text: `Тренировка: ${date}` });
+
+    const workout = this.workoutData[date];
+    if (!workout) {
+      form.createDiv({ text: 'Тренировка не найдена', cls: 'workout-placeholder' });
+      return;
+    }
+
+    // Header actions
+    const headerActions = form.createDiv({ cls: 'single-day-actions' });
+    const backBtn = headerActions.createEl('button', { text: 'Закрыть', cls: 'workout-btn' });
+    backBtn.addEventListener('click', () => this.hideModal(modal));
+
+    const exercisesContainer = form.createDiv({ cls: 'single-day-exercises' });
+    if (workout.exercises && workout.exercises.length > 0) {
+      workout.exercises.forEach((exercise, idx) => {
+        const item = exercisesContainer.createDiv({ cls: 'single-day-exercise-item' });
+        item.createDiv({ text: `${idx + 1}. ${exercise.name}`, cls: 'exercise-name' });
+        if (exercise.sets && exercise.sets.length > 0) {
+          const setsSummary = item.createDiv({ cls: 'exercise-sets' });
+          setsSummary.textContent = `${exercise.sets.length} подх., ${exercise.sets.reduce((acc, s) => acc + (s.reps || 0), 0)} повт.`;
+        }
+        if (exercise.currentOneRM && exercise.currentOneRM > 0) {
+          const oneRm = item.createDiv({ cls: 'exercise-one-rm-info' });
+          oneRm.textContent = `1ПМ: ${exercise.currentOneRM} кг`;
+        }
+
+        const actions = item.createDiv({ cls: 'single-day-item-actions' });
+        const editBtn = actions.createEl('button', { text: 'Изменить', cls: 'workout-btn workout-btn-small' });
+        editBtn.addEventListener('click', () => {
+          this.hideModal(modal);
+          // open edit form for this exercise
+          this.showExerciseForm(date, workout, idx);
+        });
+      });
+    } else {
+      exercisesContainer.createDiv({ text: 'Упражнений нет', cls: 'workout-placeholder' });
+    }
+  }
+
+  /**
    * Получает данные упражнения из библиотеки
    */
   private async getExerciseFromLibrary(exerciseName: string): Promise<ExerciseSpec | null> {

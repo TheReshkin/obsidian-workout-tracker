@@ -75,7 +75,7 @@ export interface WorkoutTrackerSettings {
   customWorkoutTypes: string[]; // пользовательские типы тренировок
 }
 
-export type ViewType = 'week' | 'month' | 'year' | 'progress' | 'spec';
+export type ViewType = 'day' | 'week' | 'month' | 'year' | 'progress' | 'spec';
 
 export interface ViewState {
   currentView: ViewType;

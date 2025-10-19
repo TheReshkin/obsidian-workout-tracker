@@ -1742,6 +1742,18 @@ select.workout-input.status-illness {
   margin-left: 8px;
 }
 
+/* Single-day view styles */
+.single-day-view {
+  padding: 18px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.single-day-actions { display:flex; gap:8px; margin-bottom:12px; }
+.single-day-exercises { display:flex; flex-direction:column; gap:10px; }
+.single-day-exercise-item { padding:12px; background:var(--background-primary); border:1px solid var(--background-modifier-border); border-radius:6px; display:flex; justify-content:space-between; align-items:center; }
+.single-day-exercise-item .exercise-name { font-weight:600; color:var(--text-normal); }
+.single-day-item-actions { display:flex; gap:8px; }
+
 /* Улучшенная разметка для подходов с интенсивностью */
 .workout-set-row {
   display: grid;

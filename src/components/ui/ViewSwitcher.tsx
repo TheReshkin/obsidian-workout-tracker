@@ -8,6 +8,7 @@ interface ViewSwitcherProps {
 
 export const ViewSwitcher: React.FC<ViewSwitcherProps> = ({ currentView, onViewChange }) => {
   const views: { id: ViewType; label: string }[] = [
+    { id: 'day', label: 'День' },
     { id: 'week', label: 'Неделя' },
     { id: 'month', label: 'Месяц' },
     { id: 'year', label: 'Год' },
