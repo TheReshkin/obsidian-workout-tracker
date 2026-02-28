@@ -1,4 +1,4 @@
-import { WorkoutEntry } from '../../types';
+import { WorkoutEntry, WorkoutSet } from '../../types';
 import WorkoutTrackerPlugin from '../../main';
 import { createFullscreenModal, hideModal } from '../../utils/dom-helpers';
 import { getExerciseSuggestions, showSuggestions, getExerciseFromLibrary } from './exercise-suggestions';
@@ -13,6 +13,20 @@ function calculateIntensity(weight: number, oneRM: number): number {
 function calculateWeight(intensity: number, oneRM: number): number {
   if (!oneRM || oneRM === 0) return 0;
   return Math.round((intensity / 100) * oneRM * 100) / 100;
+}
+
+/** Default coarse weight steps (10 kg) */
+const COARSE_WEIGHTS = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120];
+
+/** Generate fine weight steps (2.5 kg) around a chosen centre */
+function fineWeights(centre: number): number[] {
+  const result: number[] = [];
+  const start = Math.max(0, centre - 10);
+  const end = centre + 12.5;
+  for (let w = start; w <= end; w += 2.5) {
+    result.push(Math.round(w * 10) / 10);
+  }
+  return result;
 }
 
 export interface ExerciseFormContext {
@@ -116,16 +130,105 @@ export function showExerciseForm(
     }, 1000);
   });
 
-  // Подходы
-  form.createEl('label', { text: 'Подходы:' });
+  // Подходы — dropdown для количества
+  form.createEl('label', { text: 'Количество подходов:' });
+  const setsCountSelect = form.createEl('select', { cls: 'workout-input workout-sets-dropdown' });
+  for (let i = 1; i <= 10; i++) {
+    setsCountSelect.createEl('option', { value: String(i), text: `${i} подход${i === 1 ? '' : i < 5 ? 'а' : 'ов'}` });
+  }
+
+  const sets: WorkoutSet[] = exercise?.sets?.length
+    ? exercise.sets.map(s => ({ ...s }))
+    : [{ reps: 0, weight: 0, intensity: 0 }];
+  setsCountSelect.value = String(sets.length);
+
   const setsContainer = form.createDiv({ cls: 'workout-sets-container' });
 
-  const sets = exercise?.sets || [{ reps: 0, weight: 0, intensity: 0 }];
   const setInputs: {
     repsInput: HTMLInputElement;
     weightInput: HTMLInputElement;
     intensityInput: HTMLInputElement;
   }[] = [];
+
+  /** Render a smart weight picker that starts coarse (10 kg) and refines (2.5 kg) */
+  function renderWeightPicker(
+    parent: HTMLElement,
+    currentWeight: number,
+    onSelect: (w: number) => void
+  ) {
+    parent.empty();
+    parent.addClass('weight-picker');
+
+    // free-form input always visible
+    const freeInput = parent.createEl('input', {
+      type: 'number',
+      value: currentWeight ? String(currentWeight) : '',
+      placeholder: 'Вес',
+      cls: 'workout-input workout-input-small weight-free-input'
+    });
+    freeInput.addEventListener('input', () => {
+      const v = parseFloat(freeInput.value);
+      if (Number.isFinite(v) && v >= 0) onSelect(v);
+    });
+
+    const chipsRow = parent.createDiv({ cls: 'weight-chips' });
+
+    function showCoarse() {
+      chipsRow.empty();
+      COARSE_WEIGHTS.forEach(w => {
+        const chip = chipsRow.createEl('button', {
+          text: `${w}`,
+          cls: `weight-chip${w === currentWeight ? ' active' : ''}`
+        });
+        chip.type = 'button';
+        chip.tabIndex = -1;
+        chip.addEventListener('click', (e) => {
+          e.preventDefault();
+          // switch to fine-grained around this value
+          onSelect(w);
+          freeInput.value = String(w);
+          showFine(w);
+        });
+      });
+    }
+
+    function showFine(centre: number) {
+      chipsRow.empty();
+      // back button to coarse
+      const backChip = chipsRow.createEl('button', { text: '← все', cls: 'weight-chip weight-chip-back' });
+      backChip.type = 'button';
+      backChip.tabIndex = -1;
+      backChip.addEventListener('click', (e) => { e.preventDefault(); showCoarse(); });
+
+      fineWeights(centre).forEach(w => {
+        const chip = chipsRow.createEl('button', {
+          text: `${w}`,
+          cls: `weight-chip${w === currentWeight ? ' active' : ''}`
+        });
+        chip.type = 'button';
+        chip.tabIndex = -1;
+        chip.addEventListener('click', (e) => {
+          e.preventDefault();
+          onSelect(w);
+          freeInput.value = String(w);
+          // update active state
+          chipsRow.querySelectorAll('.weight-chip').forEach(c => c.removeClass('active'));
+          chip.addClass('active');
+        });
+      });
+    }
+
+    // start with appropriate view
+    if (currentWeight > 0 && COARSE_WEIGHTS.includes(currentWeight)) {
+      showFine(currentWeight);
+    } else if (currentWeight > 0) {
+      // find nearest coarse
+      const nearest = COARSE_WEIGHTS.reduce((a, b) => Math.abs(b - currentWeight) < Math.abs(a - currentWeight) ? b : a, 0);
+      showFine(nearest);
+    } else {
+      showCoarse();
+    }
+  }
 
   const renderSets = () => {
     setsContainer.empty();
@@ -133,7 +236,7 @@ export function showExerciseForm(
 
     sets.forEach((set, index) => {
       const setRow = setsContainer.createDiv({ cls: 'workout-set-row' });
-      setRow.createEl('span', { text: `Подход ${index + 1}:` });
+      setRow.createEl('span', { text: `Подход ${index + 1}:`, cls: 'set-label' });
 
       const repsInput = setRow.createEl('input', {
         type: 'number',
@@ -143,13 +246,24 @@ export function showExerciseForm(
       });
       setRow.createEl('span', { text: 'раз' });
 
-      const weightInput = setRow.createEl('input', {
-        type: 'number',
-        value: (set.weight !== undefined && set.weight !== null && set.weight !== 0) ? set.weight.toString() : '',
-        placeholder: 'Вес',
-        cls: 'workout-input workout-input-small'
+      // Weight picker container
+      const weightPickerContainer = setRow.createDiv({ cls: 'weight-picker-container' });
+      const weightInput = document.createElement('input') as HTMLInputElement;
+      weightInput.type = 'hidden';
+      weightInput.value = (set.weight !== undefined && set.weight !== null && set.weight !== 0) ? set.weight.toString() : '';
+      setRow.appendChild(weightInput);
+
+      renderWeightPicker(weightPickerContainer, set.weight || 0, (w) => {
+        weightInput.value = String(w);
+        set.weight = w;
+        // auto-calc intensity
+        const oneRM = oneRMInput.valueAsNumber;
+        if (Number.isFinite(oneRM) && oneRM > 0) {
+          const intensity = calculateIntensity(w, oneRM);
+          intensityInput.value = intensity.toString();
+          set.intensity = intensity;
+        }
       });
-      setRow.createEl('span', { text: 'кг' });
 
       const intensityInput = setRow.createEl('input', {
         type: 'number',
@@ -161,17 +275,7 @@ export function showExerciseForm(
       intensityInput.max = '100';
       setRow.createEl('span', { text: '% от 1ПМ' });
 
-      // Обработчики для автоматического расчета
-      weightInput.addEventListener('input', () => {
-        const weight = weightInput.valueAsNumber;
-        const oneRM = oneRMInput.valueAsNumber;
-        if (Number.isFinite(oneRM) && Number.isFinite(weight)) {
-          const intensity = calculateIntensity(weight, oneRM);
-          intensityInput.value = intensity.toString();
-          set.intensity = intensity;
-        }
-      });
-
+      // intensity → weight
       intensityInput.addEventListener('input', () => {
         const intensity = intensityInput.valueAsNumber;
         const oneRM = oneRMInput.valueAsNumber;
@@ -179,64 +283,50 @@ export function showExerciseForm(
           const weight = calculateWeight(intensity, oneRM);
           weightInput.value = weight.toString();
           set.weight = weight;
+          renderWeightPicker(weightPickerContainer, weight, (w) => {
+            weightInput.value = String(w);
+            set.weight = w;
+            const newIntensity = calculateIntensity(w, oneRM);
+            intensityInput.value = newIntensity.toString();
+            set.intensity = newIntensity;
+          });
         }
       });
-
-      oneRMInput.addEventListener('input', () => {
-        const oneRMVal = oneRMInput.valueAsNumber;
-        if (!Number.isFinite(oneRMVal) || oneRMVal <= 0) return;
-
-        sets.forEach((s, i) => {
-          if (s.weight && s.weight > 0) {
-            const intensity = calculateIntensity(s.weight, oneRMVal);
-            if (setInputs[i]?.intensityInput) {
-              setInputs[i].intensityInput.value = intensity.toString();
-            }
-            s.intensity = intensity;
-          }
-        });
-      });
-
-      if (sets.length > 1) {
-        const deleteSetBtn = setRow.createEl('button', {
-          text: '✕',
-          cls: 'workout-btn workout-btn-small workout-btn-danger'
-        });
-
-        deleteSetBtn.addEventListener('click', () => {
-          setInputs.forEach((input, i) => {
-            if (sets[i] && i !== index) {
-              sets[i].reps = Number.isFinite(input.repsInput.valueAsNumber) ? input.repsInput.valueAsNumber : 0;
-              sets[i].weight = Number.isFinite(input.weightInput.valueAsNumber) ? input.weightInput.valueAsNumber : 0;
-              sets[i].intensity = Number.isFinite(input.intensityInput.valueAsNumber) ? input.intensityInput.valueAsNumber : 0;
-            }
-          });
-          sets.splice(index, 1);
-          renderSets();
-        });
-      }
 
       setInputs.push({ repsInput, weightInput, intensityInput });
     });
-
-    // Кнопка добавления подхода
-    const addSetBtn = setsContainer.createEl('button', {
-      text: 'Добавить подход',
-      cls: 'workout-btn workout-btn-secondary'
-    });
-
-    addSetBtn.addEventListener('click', () => {
-      setInputs.forEach((input, index) => {
-        if (sets[index]) {
-          sets[index].reps = Number.isFinite(input.repsInput.valueAsNumber) ? input.repsInput.valueAsNumber : 0;
-          sets[index].weight = Number.isFinite(input.weightInput.valueAsNumber) ? input.weightInput.valueAsNumber : 0;
-          sets[index].intensity = Number.isFinite(input.intensityInput.valueAsNumber) ? input.intensityInput.valueAsNumber : 0;
-        }
-      });
-      sets.push({ reps: 0, weight: 0, intensity: 0 });
-      renderSets();
-    });
   };
+
+  // 1RM change → recalc all intensities (registered ONCE outside renderSets)
+  oneRMInput.addEventListener('input', () => {
+    const oneRMVal = oneRMInput.valueAsNumber;
+    if (!Number.isFinite(oneRMVal) || oneRMVal <= 0) return;
+    sets.forEach((s, i) => {
+      if (s.weight && s.weight > 0) {
+        const intensity = calculateIntensity(s.weight, oneRMVal);
+        if (setInputs[i]?.intensityInput) {
+          setInputs[i].intensityInput.value = intensity.toString();
+        }
+        s.intensity = intensity;
+      }
+    });
+  });
+
+  // Sync sets array when dropdown changes
+  setsCountSelect.addEventListener('change', () => {
+    // save current values
+    setInputs.forEach((input, i) => {
+      if (sets[i]) {
+        sets[i].reps = Number.isFinite(input.repsInput.valueAsNumber) ? input.repsInput.valueAsNumber : 0;
+        sets[i].weight = Number.isFinite(parseFloat(input.weightInput.value)) ? parseFloat(input.weightInput.value) : 0;
+        sets[i].intensity = Number.isFinite(input.intensityInput.valueAsNumber) ? input.intensityInput.valueAsNumber : 0;
+      }
+    });
+    const target = parseInt(setsCountSelect.value);
+    while (sets.length < target) sets.push({ reps: 0, weight: 0, intensity: 0 });
+    while (sets.length > target) sets.pop();
+    renderSets();
+  });
 
   renderSets();
 

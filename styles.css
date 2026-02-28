@@ -1890,3 +1890,105 @@ select.workout-input.status-illness {
 .workout-drop-zone.workout-dropping .workout-card {
   opacity: 0.3;
 }
+
+/* ── Sets dropdown ── */
+.workout-sets-dropdown {
+  width: 180px;
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+/* ── Weight picker ── */
+.weight-picker-container {
+  width: 100%;
+}
+
+.weight-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.weight-free-input {
+  width: 80px !important;
+}
+
+.weight-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.weight-chip {
+  padding: 3px 8px;
+  font-size: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.weight-chip:hover {
+  background: var(--background-modifier-hover);
+  border-color: var(--interactive-accent);
+}
+
+.weight-chip.active {
+  background: var(--interactive-accent);
+  color: var(--text-on-accent);
+  border-color: var(--interactive-accent);
+}
+
+.weight-chip-back {
+  background: var(--background-modifier-border);
+  font-weight: 600;
+}
+
+.weight-chip-back:hover {
+  background: var(--background-modifier-hover);
+}
+
+.set-label {
+  font-weight: 600;
+  min-width: 80px;
+}
+
+/* Stack set rows vertically for better weight picker display */
+.workout-set-row {
+  flex-wrap: wrap;
+}
+
+/* ── Workout File View (kanban-style override) ── */
+.workout-file-view {
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.workout-file-view .workout-header {
+  margin-bottom: 16px;
+}
+
+.workout-file-view .workout-calendar-nav {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.workout-file-view .workout-display-modes {
+  display: flex;
+  gap: 4px;
+}
+
+.workout-file-view .workout-nav-buttons {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}

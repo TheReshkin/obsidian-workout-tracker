@@ -24,6 +24,20 @@ export function createFullscreenModal(onClose?: () => void): HTMLElement {
   // Content container
   const content = modal.createDiv({ cls: 'workout-modal-content' });
 
+  // Prevent Obsidian hotkey system from intercepting keystrokes inside the modal
+  modal.addEventListener('keydown', (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    if (
+      target instanceof HTMLInputElement ||
+      target instanceof HTMLTextAreaElement ||
+      target instanceof HTMLSelectElement
+    ) {
+      if (e.key !== 'Escape') {
+        e.stopPropagation();
+      }
+    }
+  });
+
   // ESC → close (cleaned up on any close path)
   const escapeHandler = (e: KeyboardEvent) => {
     if (e.key === 'Escape') close();

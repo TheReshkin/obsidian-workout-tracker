@@ -1,4 +1,4 @@
-import { App, Plugin, PluginSettingTab, Setting, Notice } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting, Notice, TFile, MarkdownView } from 'obsidian';
 import { WorkoutTrackerSettings } from './types';
 import { DEFAULT_SETTINGS } from './settings';
 import { DataManager } from './data/data-manager';
@@ -6,6 +6,7 @@ import { WorkoutFileModal } from './modals/WorkoutFileModal';
 import { WorkoutTemplateModal } from './modals/WorkoutTemplateModal';
 import { QuickWorkoutModal } from './modals/QuickWorkoutModal';
 import { WorkoutMarkdownProcessor } from './processors/WorkoutMarkdownProcessor';
+import { WorkoutFileView, WORKOUT_VIEW_TYPE, hasWorkoutFrontmatter } from './views/WorkoutFileView';
 
 export default class WorkoutTrackerPlugin extends Plugin {
   settings: WorkoutTrackerSettings;
@@ -33,6 +34,51 @@ export default class WorkoutTrackerPlugin extends Plugin {
     // Инициализируем и регистрируем процессор markdown
     this.markdownProcessor = new WorkoutMarkdownProcessor(this);
     this.markdownProcessor.register();
+
+    // ── Kanban-style view override ──
+    // Register the custom TextFileView for workout files
+    this.registerView(WORKOUT_VIEW_TYPE, (leaf) => new WorkoutFileView(leaf, this));
+
+    // When a file is opened, check frontmatter and switch to custom view if needed
+    this.registerEvent(
+      this.app.workspace.on('file-open', (file) => {
+        if (!file || !(file instanceof TFile) || file.extension !== 'md') return;
+
+        const leaf = this.app.workspace.getActiveViewOfType(MarkdownView)?.leaf;
+        if (!leaf) return;
+
+        // Read file to check frontmatter
+        this.app.vault.read(file).then(content => {
+          if (hasWorkoutFrontmatter(content)) {
+            // Already showing the workout view? skip
+            if (leaf.view.getViewType() === WORKOUT_VIEW_TYPE) return;
+            leaf.setViewState({
+              type: WORKOUT_VIEW_TYPE,
+              state: leaf.getViewState().state
+            });
+          }
+        });
+      })
+    );
+
+    // Also handle the case where a workout file is already open on plugin load
+    this.app.workspace.onLayoutReady(() => {
+      this.app.workspace.iterateAllLeaves((leaf) => {
+        if (leaf.view instanceof MarkdownView && leaf.view.file) {
+          const file = leaf.view.file;
+          if (file.extension === 'md') {
+            this.app.vault.read(file).then(content => {
+              if (hasWorkoutFrontmatter(content)) {
+                leaf.setViewState({
+                  type: WORKOUT_VIEW_TYPE,
+                  state: leaf.getViewState().state
+                });
+              }
+            });
+          }
+        }
+      });
+    });
 
     // expose helper for opening single-day view via UI components
     (this as any).openSingleDayView = async (date: string) => {
@@ -77,6 +123,24 @@ export default class WorkoutTrackerPlugin extends Plugin {
       name: 'Создать базовую библиотеку упражнений',
       callback: () => {
         this.initExerciseLibrary();
+      }
+    });
+
+    this.addCommand({
+      id: 'create-workout-page',
+      name: 'Создать страницу тренировок (kanban-режим)',
+      callback: async () => {
+        const path = `Тренировки-${Date.now()}.md`;
+        const content = '---\nworkout-tracker: true\n---\n{}\n';
+        try {
+          const file = await this.app.vault.create(path, content);
+          const leaf = this.app.workspace.getLeaf(false);
+          await leaf.openFile(file);
+          new Notice('Страница тренировок создана!');
+        } catch (e) {
+          console.error(e);
+          new Notice('Ошибка создания файла');
+        }
       }
     });
 
