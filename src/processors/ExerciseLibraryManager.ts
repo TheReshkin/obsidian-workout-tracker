@@ -1,5 +1,6 @@
 import { MarkdownPostProcessorContext } from 'obsidian';
 import { ExerciseSpec, ExerciseLibrary, OneRMRecord } from '../types';
+import { createFullscreenModal, hideModal as hideFullscreenModal, applyLuminanceColor } from '../utils/dom-helpers';
 import WorkoutTrackerPlugin from '../main';
 
 /**
@@ -198,16 +199,7 @@ export class ExerciseLibraryManager {
         span.style.marginRight = '6px';
         // apply label background from exercise spec if provided
         if (exercise.labelBackground) {
-          span.style.background = exercise.labelBackground;
-          // choose readable text color based on background luminance
-          const c = exercise.labelBackground.replace('#','');
-          if (/^[0-9A-Fa-f]{6}$/.test(c)) {
-            const r = parseInt(c.substring(0,2),16);
-            const g = parseInt(c.substring(2,4),16);
-            const b = parseInt(c.substring(4,6),16);
-            const luminance = (0.299*r + 0.587*g + 0.114*b) / 255;
-            span.style.color = luminance > 0.6 ? 'var(--text-normal)' : 'var(--text-on-accent)';
-          }
+          applyLuminanceColor(span, exercise.labelBackground);
         }
       });
     }
@@ -480,30 +472,13 @@ export class ExerciseLibraryManager {
    * Создает модальное окно
    */
   private createExerciseModal(): HTMLElement {
-    const modal = document.body.createDiv({ cls: 'workout-fullscreen-modal' });
-    
-    const backdrop = modal.createDiv({ cls: 'workout-modal-backdrop' });
-    backdrop.addEventListener('click', () => {
-      this.hideModal(modal);
-    });
-
-    const content = modal.createDiv({ cls: 'workout-modal-content' });
-    
-    const escapeHandler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        this.hideModal(modal);
-        document.removeEventListener('keydown', escapeHandler);
-      }
-    };
-    document.addEventListener('keydown', escapeHandler);
-    
-    return content;
+    return createFullscreenModal();
   }
 
   /**
    * Скрывает модальное окно
    */
   private hideModal(modal: HTMLElement) {
-    modal.remove();
+    hideFullscreenModal(modal);
   }
 }

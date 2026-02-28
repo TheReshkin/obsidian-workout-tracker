@@ -11,7 +11,6 @@
     "importHelpers": true,
     "isolatedModules": true,
     "strictNullChecks": true,
-    "jsx": "react-jsx",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "lib": [
@@ -25,7 +24,6 @@
     }
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx"
+    "src/**/*.ts"
   ]
 }

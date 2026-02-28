@@ -3,6 +3,10 @@ import { WorkoutData, WorkoutEntry, WorkoutStatus } from '../types';
 import { WorkoutDataUtils } from '../utils/data-utils';
 import { InlineWorkoutEditor } from './InlineWorkoutEditor';
 import { ExerciseLibraryManager } from './ExerciseLibraryManager';
+import { renderStatsView } from './views/stats-view';
+import { renderListView } from './views/list-view';
+import { renderWorkoutCard } from './views/workout-card';
+import { renderYearView } from './views/year-view';
 import WorkoutTrackerPlugin from '../main';
 
 /**
@@ -182,10 +186,10 @@ export class WorkoutMarkdownProcessor {
         this.renderCalendarView(container, workoutData, context, editor);
         break;
       case 'list':
-        this.renderListView(container, workoutData, context, editor);
+        renderListView(container, workoutData, editor);
         break;
       case 'stats':
-        this.renderStatsView(container, workoutData, context, editor);
+        renderStatsView(container, workoutData);
         break;
     }
   }
@@ -221,7 +225,14 @@ export class WorkoutMarkdownProcessor {
     const weeksContainer = container.createDiv({ cls: 'workout-weeks-container' });
 
     if (this.displayMode === 'year') {
-      this.renderYearView(weeksContainer, workoutData, context, editor);
+      renderYearView(weeksContainer, this.currentDate, workoutData, (year, month) => {
+        this.displayMode = 'month';
+        this.currentDate = new Date(year, month, 1);
+        this.refreshCalendarView(
+          weeksContainer.closest('.workout-weeks-container')!.parentElement!,
+          workoutData, context, editor
+        );
+      });
     } else {
       // Определяем количество недель для отображения
       const weeksToShow = this.displayMode === 'month' ? 4 : 1;
@@ -290,7 +301,7 @@ export class WorkoutMarkdownProcessor {
       this.setupDropZone(dayContent, dateStr, workoutData, editor);
 
       if (workout) {
-        this.renderWorkoutCard(dayContent, workout, dateStr, workoutData, context, editor, true);
+        renderWorkoutCard(dayContent, workout, dateStr, workoutData, editor, true);
       } else {
         // Пустой день с кнопкой добавления
         const emptyDay = dayContent.createDiv({ cls: 'workout-empty-day' });
@@ -306,76 +317,9 @@ export class WorkoutMarkdownProcessor {
   }
 
   /**
-   * Отображает годовой вид с месяцами
+   * Настраивает drop zone для drag-n-drop тренировок
    */
-  private renderYearView(container: HTMLElement, workoutData: WorkoutData, context: MarkdownPostProcessorContext, editor: InlineWorkoutEditor) {
-    container.addClass('workout-year-view');
-    
-    const year = this.currentDate.getFullYear();
-    const monthNames = [
-      'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-      'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'
-    ];
-
-    const monthsGrid = container.createDiv({ cls: 'workout-year-months' });
-
-    for (let month = 0; month < 12; month++) {
-      const monthContainer = monthsGrid.createDiv({ cls: 'workout-year-month' });
-      
-      // Заголовок месяца
-      const monthHeader = monthContainer.createDiv({ cls: 'workout-month-header' });
-      monthHeader.textContent = monthNames[month];
-      
-      // Подсветка текущего месяца
-      const currentDate = new Date();
-      if (year === currentDate.getFullYear() && month === currentDate.getMonth()) {
-        monthContainer.addClass('current-month');
-      }
-
-      // Получаем данные о тренировках за месяц
-      const monthStats = this.getMonthWorkoutStats(year, month, workoutData);
-      
-      // Создаем полоски тренировок
-      const workoutBars = monthContainer.createDiv({ cls: 'workout-month-bars' });
-      
-      if (monthStats.totalWorkouts === 0) {
-        workoutBars.createDiv({ 
-          cls: 'workout-month-empty',
-          text: 'Нет записей'
-        });
-      } else {
-        // Группируем по типам тренировок
-        Object.entries(monthStats.workoutTypes).forEach(([type, count]) => {
-          const bar = workoutBars.createDiv({ cls: 'workout-type-bar' });
-          bar.setAttribute('data-type', type);
-          bar.style.width = `${(count / monthStats.totalWorkouts) * 100}%`;
-          bar.title = `${type}: ${count} тренировок`;
-        });
-      }
-
-      // Статистика месяца
-      const monthSummary = monthContainer.createDiv({ cls: 'workout-month-summary' });
-      monthSummary.innerHTML = `
-        <div class="month-stat">
-          <span class="stat-number">${monthStats.totalWorkouts}</span>
-          <span class="stat-label">тренировок</span>
-        </div>
-        <div class="month-stat">
-          <span class="stat-number">${monthStats.completedWorkouts}</span>
-          <span class="stat-label">выполнено</span>
-        </div>
-      `;
-
-      // Кликабельность для навигации к месяцу
-      monthContainer.addEventListener('click', () => {
-        this.displayMode = 'month';
-        this.currentDate = new Date(year, month, 1);
-        this.refreshCalendarView(container.closest('.workout-weeks-container')!.parentElement!, workoutData, context, editor);
-      });
-    }
-  }
-
-  private setupDropZone(element: HTMLElement, targetDate: string, workoutData: any, editor: InlineWorkoutEditor) {
+  private setupDropZone(element: HTMLElement, targetDate: string, workoutData: WorkoutData, editor: InlineWorkoutEditor) {
     element.classList.add('workout-drop-zone');
     
     element.addEventListener('dragover', (e) => {
@@ -418,34 +362,6 @@ export class WorkoutMarkdownProcessor {
       // Обновляем отображение
       editor.updateWorkoutData(workoutData);
     }
-  }
-
-  /**
-   * Получает статистику тренировок за месяц
-   */
-  private getMonthWorkoutStats(year: number, month: number, workoutData: WorkoutData) {
-    const stats = {
-      totalWorkouts: 0,
-      completedWorkouts: 0,
-      workoutTypes: {} as Record<string, number>
-    };
-
-    Object.entries(workoutData).forEach(([dateStr, workout]) => {
-      const date = new Date(dateStr);
-      if (date.getFullYear() === year && date.getMonth() === month) {
-        stats.totalWorkouts++;
-        
-        if (workout.status === 'done') {
-          stats.completedWorkouts++;
-        }
-        
-        // Подсчитываем типы тренировок
-        const type = workout.type || 'другое';
-        stats.workoutTypes[type] = (stats.workoutTypes[type] || 0) + 1;
-      }
-    });
-
-    return stats;
   }
 
   /**
@@ -653,177 +569,6 @@ export class WorkoutMarkdownProcessor {
     this.renderWeeksContent(container, workoutData, context, editor);
   }
 
-  /**
-   * Вид списка тренировок
-   */
-  private renderListView(container: HTMLElement, workoutData: WorkoutData, context: MarkdownPostProcessorContext, editor: InlineWorkoutEditor) {
-    container.addClass('workout-list-view');
-
-    const sortedDates = Object.keys(workoutData).sort().reverse();
-
-    if (sortedDates.length === 0) {
-      container.createEl('div', {
-        text: 'Тренировки не найдены',
-        cls: 'workout-empty-state'
-      });
-      return;
-    }
-
-    sortedDates.forEach(dateStr => {
-      const workout = workoutData[dateStr];
-      const workoutItem = container.createDiv({ cls: 'workout-list-item' });
-      
-      const workoutDate = workoutItem.createDiv({ cls: 'workout-date' });
-      workoutDate.createSpan({ text: this.formatDate(new Date(dateStr)), cls: 'date-text' });
-      workoutDate.createSpan({ text: workout.status, cls: `status status-${workout.status}` });
-
-      this.renderWorkoutCard(workoutItem, workout, dateStr, workoutData, context, editor, false);
-    });
-  }
-
-  /**
-   * Вид статистики
-   */
-  private renderStatsView(container: HTMLElement, workoutData: WorkoutData, context: MarkdownPostProcessorContext, editor: InlineWorkoutEditor) {
-    container.addClass('workout-stats-view');
-
-    const stats = this.calculateStats(workoutData);
-
-    // Общая статистика
-    const generalStats = container.createDiv({ cls: 'workout-general-stats' });
-    generalStats.createEl('h4', { text: 'Общая статистика' });
-
-    const statsGrid = generalStats.createDiv({ cls: 'stats-grid' });
-    
-    Object.entries(stats.general).forEach(([key, value]) => {
-      const statItem = statsGrid.createDiv({ cls: 'stat-item' });
-      statItem.createSpan({ text: this.getStatLabel(key), cls: 'stat-label' });
-      statItem.createSpan({ text: value.toString(), cls: 'stat-value' });
-    });
-
-    // Статистика по группам мышц
-    if (Object.keys(stats.byMuscleGroup).length > 0) {
-      const muscleStats = container.createDiv({ cls: 'workout-muscle-stats' });
-      muscleStats.createEl('h4', { text: 'По группам мышц' });
-
-      Object.entries(stats.byMuscleGroup).forEach(([group, count]) => {
-  const groupItem = muscleStats.createDiv({ cls: 'muscle-group-item' });
-        // render group name as a pill for better contrast
-        const span = groupItem.createSpan({ text: group, cls: 'group-name pill' });
-        // if a color is defined in the shared type map, apply it and pick readable text color
-        try {
-          // import of MUSCLE_GROUP_COLORS isn't available here; try reading from types map via global require if present
-          const mgColors: any = require('../types').MUSCLE_GROUP_COLORS;
-          const bg = mgColors && mgColors[group];
-          if (bg) {
-            span.style.background = bg;
-            const c = bg.replace('#','');
-            if (/^[0-9A-Fa-f]{6}$/.test(c)) {
-              const r = parseInt(c.substring(0,2),16);
-              const g = parseInt(c.substring(2,4),16);
-              const b = parseInt(c.substring(4,6),16);
-              const luminance = (0.299*r + 0.587*g + 0.114*b) / 255;
-              span.style.color = luminance > 0.6 ? 'var(--text-normal)' : 'var(--text-on-accent)';
-            }
-          }
-        } catch (e) {
-          // ignore if require fails in bundler
-        }
-        groupItem.createSpan({ text: count.toString(), cls: 'group-count' });
-      });
-    }
-  }
-
-  /**
-   * Отрисовка карточки тренировки
-   */
-  private renderWorkoutCard(
-    container: HTMLElement, 
-    workout: WorkoutEntry, 
-    dateStr: string,
-    workoutData: WorkoutData,
-    context: MarkdownPostProcessorContext,
-    editor: InlineWorkoutEditor,
-    compact: boolean = true
-  ) {
-    const card = container.createDiv({ cls: `workout-card status-${workout.status}` });
-
-    // Добавляем drag-n-drop функциональность
-    card.draggable = true;
-    card.setAttribute('data-workout-date', dateStr);
-    
-    card.addEventListener('dragstart', (e) => {
-      e.dataTransfer!.setData('text/plain', dateStr);
-      e.dataTransfer!.setData('workout-data', JSON.stringify(workout));
-      card.addClass('dragging');
-    });
-
-    card.addEventListener('dragend', () => {
-      card.removeClass('dragging');
-    });
-
-    // Заголовок карточки
-    const cardHeader = card.createDiv({ cls: 'workout-card-header' });
-    cardHeader.createSpan({ text: workout.type, cls: 'workout-type' });
-
-    const cardActions = cardHeader.createDiv({ cls: 'workout-card-actions' });
-    
-    // Кнопка редактирования
-    const editBtn = cardActions.createEl('button', { text: '✏️', cls: 'workout-action-btn' });
-    editBtn.addEventListener('click', () => {
-      editor.showEditWorkoutForm(dateStr, workout);
-    });
-
-    // Заметки
-    if (workout.notes) {
-      card.createDiv({ text: workout.notes, cls: 'workout-notes' });
-    }
-
-    // Упражнения (если не компактный вид)
-    if (workout.exercises && workout.exercises.length > 0) {
-      const exercises = card.createDiv({ 
-        cls: compact ? 'workout-exercises compact' : 'workout-exercises' 
-      });
-      
-      // Показываем все упражнения с полной информацией в любом режиме
-      workout.exercises.forEach(exercise => {
-        const exerciseEl = exercises.createDiv({ cls: 'exercise-item' });
-        
-        // Название упражнения
-        exerciseEl.createDiv({ text: exercise.name, cls: 'exercise-name' });
-        
-        // Детальная информация о каждом подходе — показываем как нумерованный список
-        if (exercise.sets && exercise.sets.length > 0) {
-          const ol = exerciseEl.createEl('ol', { cls: 'exercise-sets-list' });
-          exercise.sets.forEach((set) => {
-            const li = ol.createEl('li', { cls: 'exercise-set-detail' });
-            let setText = `${set.reps} повт.`;
-
-            if (set.weight && set.weight > 0) {
-              setText += ` × ${set.weight} кг`;
-            }
-
-            if (set.intensity && set.intensity > 0) {
-              setText += ` (${Math.round(set.intensity)}%)`;
-            }
-
-            if (set.notes) {
-              setText += ` - ${set.notes}`;
-            }
-
-            li.textContent = setText;
-          });
-        }
-        
-        // Показываем 1ПМ если есть
-        if (exercise.currentOneRM && exercise.currentOneRM > 0) {
-          const oneRmInfo = exerciseEl.createDiv({ cls: 'exercise-one-rm-info' });
-          oneRmInfo.textContent = `1ПМ: ${exercise.currentOneRM} кг`;
-        }
-      });
-    }
-  }
-
   // Вспомогательные методы
   private getWeekDates(date: Date): string[] {
     const week = [];
@@ -855,42 +600,4 @@ export class WorkoutMarkdownProcessor {
     return `${day}.${month}`;
   }
 
-  private calculateStats(workoutData: WorkoutData) {
-    const stats = {
-      general: {
-        total: 0,
-        done: 0,
-        planned: 0,
-        skipped: 0,
-        illness: 0
-      },
-      byMuscleGroup: {} as Record<string, number>
-    };
-
-    Object.values(workoutData).forEach(workout => {
-      stats.general.total++;
-      if (stats.general[workout.status] !== undefined) {
-        stats.general[workout.status]++;
-      }
-      
-      if (stats.byMuscleGroup[workout.type]) {
-        stats.byMuscleGroup[workout.type]++;
-      } else {
-        stats.byMuscleGroup[workout.type] = 1;
-      }
-    });
-
-    return stats;
-  }
-
-  private getStatLabel(key: string): string {
-    const labels: Record<string, string> = {
-      total: 'Всего тренировок',
-      done: 'Выполнено',
-      planned: 'Запланировано',
-      skipped: 'Пропущено',
-      illness: 'Болезнь'
-    };
-    return labels[key] || key;
-  }
 }
