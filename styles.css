@@ -768,6 +768,38 @@ p {
   font-weight: 600;
 }
 
+/* Chart container background and SVG text contrast */
+.workout-progress-charts .chart-container {
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  padding: 12px;
+  box-shadow: var(--background-modifier-shadow, none);
+}
+
+.workout-progress-charts .progress-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.workout-progress-charts .progress-chart text {
+  fill: var(--text-normal);
+}
+
+.workout-progress-charts .charts-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.workout-progress-charts .charts-controls label {
+  font-size: 12px;
+  color: var(--text-normal);
+  margin-right: 4px;
+}
+
 /* Exercise status badge in editor and read-only */
 .exercise-status-badge {
   display: inline-flex;
