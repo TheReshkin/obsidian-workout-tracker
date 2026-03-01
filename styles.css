@@ -383,6 +383,90 @@ p {
   margin-bottom: 16px;
 }
 
+/* Responsive: vertical layout for mobile / portrait */
+@media (max-width: 700px), (orientation: portrait) {
+  .workout-week,
+  .workout-week-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .workout-day {
+    min-height: 0;
+    display: block;
+  }
+
+  .workout-day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+  }
+
+  .workout-week .workout-day {
+    margin-bottom: 6px;
+  }
+
+  /* Stack header controls and mode switches vertically */
+  .workout-controls,
+  .workout-nav-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .workout-mode-buttons,
+  .workout-view-switcher {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  .workout-period-nav {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .workout-nav-btn {
+    min-width: 0;
+    flex: 1 1 auto;
+    text-align: center;
+  }
+
+  /* Make action buttons easier to tap */
+  .workout-action-btn,
+  .workout-btn,
+  .workout-nav-btn,
+  .workout-mode-btn {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+
+  /* Ensure workout card actions are visible and touchable on mobile */
+  .workout-card-actions {
+    opacity: 1;
+    position: relative;
+    margin-top: 6px;
+  }
+
+  .workout-card:hover .workout-card-actions {
+    opacity: 1;
+  }
+
+  /* Larger add buttons in empty day cells */
+  .workout-empty-day .workout-add-day-btn,
+  .workout-add-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+  }
+}
+
 .workout-day {
   border: 1px solid var(--background-modifier-border);
   border-radius: 6px;
