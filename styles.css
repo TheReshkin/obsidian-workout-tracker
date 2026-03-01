@@ -1,8 +1,8 @@
 /* Workout Tracker Plugin Styles */
 
 :root {
-  --color-green: #22c55e; /* Более яркий зеленый */
-  --workout-success-color: #22c55e; /* Собственная переменная для успеха */
+  --color-green: #16a34a; /* Более приглушённый тёмно-зелёный (лучше контрастирует с текстом) */
+  --workout-success-color: #16a34a; /* Собственная переменная для успеха */
   /* Альтернативные варианты:
   --color-green: #16a34a; /* Темно-зеленый */
   /* --color-green: #10b981; /* Изумрудный */
@@ -484,6 +484,21 @@ p {
   border-radius: 6px 6px 0 0;
 }
 
+/* Ensure day header content uses limited space and truncates long group/type names */
+.workout-day-header .day-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 11px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workout-day-header .day-number {
+  margin-left: 8px;
+  flex: 0 0 auto;
+}
+
 .day-name {
   font-size: 11px;
   color: var(--text-muted);
@@ -565,6 +580,55 @@ p {
   font-size: 12px;
   font-weight: 600;
   color: var(--text-normal);
+  max-width: 65%;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Reduce header footprint to prioritise exercise/set details */
+.workout-card-header {
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.workout-notes {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  max-height: 2.6em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Compact view: make exercise names smaller and sets more prominent */
+.workout-exercises.compact .exercise-item {
+  padding: 2px 0;
+}
+
+.workout-exercises.compact .exercise-name {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.workout-exercises.compact .exercise-sets-list {
+  margin: 0;
+  padding-left: 16px;
+  font-size: 12px;
+}
+
+.exercise-set-detail {
+  margin-bottom: 2px;
+  line-height: 1.2;
+}
+
+/* If muscle-group pills are present, render them compactly */
+.group-name.pill {
+  padding: 2px 6px;
+  font-size: 11px;
+  margin-left: 6px;
 }
 
 .workout-card-actions {
@@ -721,7 +785,7 @@ p {
 }
 
 .exercise-status-badge.status-planned { background: #007BFF; }
-.exercise-status-badge.status-done { background: #28A745; }
+.exercise-status-badge.status-done { background: var(--color-green); }
 .exercise-status-badge.status-skipped { background: #FFC107; color: var(--text-normal); }
 .exercise-status-badge.status-illness { background: #DC3545; }
 
@@ -739,7 +803,7 @@ p {
   color: white;
 }
 .workout-status-badge.status-planned { background: #007BFF; }
-.workout-status-badge.status-done { background: #28A745; }
+.workout-status-badge.status-done { background: var(--color-green); }
 .workout-status-badge.status-skipped { background: #FFC107; color: var(--text-normal); }
 .workout-status-badge.status-illness { background: #DC3545; }
 
@@ -750,8 +814,8 @@ select.workout-input.status-planned {
   color: var(--text-normal) !important;
 }
 select.workout-input.status-done {
-  background: rgba(40,167,69,0.08); /* slightly stronger green tint */
-  border-color: #28A745;
+  background: rgba(22,163,74,0.08); /* match --color-green with low opacity */
+  border-color: var(--color-green);
   color: var(--text-normal) !important;
 }
 select.workout-input.status-skipped {
@@ -2041,6 +2105,38 @@ select.workout-input.status-illness {
   font-weight: 600;
   min-width: 80px;
 }
+
+/* Reps picker styles */
+.reps-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reps-free-input {
+  width: 80px !important;
+}
+
+.reps-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.reps-chip {
+  padding: 4px 8px;
+  font-size: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--background-modifier-border);
+  background: var(--background-secondary);
+  color: var(--text-normal);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1.2;
+}
+
+.reps-chip:hover { background: var(--background-modifier-hover); }
+.reps-chip.active { background: var(--interactive-accent); color: var(--text-on-accent); border-color: var(--interactive-accent); }
 
 /* Stack set rows vertically for better weight picker display */
 .workout-set-row {

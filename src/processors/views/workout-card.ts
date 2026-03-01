@@ -69,9 +69,19 @@ export function renderWorkoutCard(
         });
       }
 
-      if (exercise.currentOneRM && exercise.currentOneRM > 0) {
-        const oneRmInfo = exerciseEl.createDiv({ cls: 'exercise-one-rm-info' });
-        oneRmInfo.textContent = `1ПМ: ${exercise.currentOneRM} кг`;
+      // Estimate 1RM from sets if available
+      if (exercise.sets && exercise.sets.length > 0) {
+        let best = 0;
+        exercise.sets.forEach(s => {
+          if (s.weight && s.weight > 0 && s.reps && s.reps > 0) {
+            const est = s.weight * (1 + (s.reps / 30));
+            if (est > best) best = est;
+          }
+        });
+        if (best > 0) {
+          const oneRmInfo = exerciseEl.createDiv({ cls: 'exercise-one-rm-info' });
+          oneRmInfo.textContent = `1ПМ: ${Math.round(best)} кг`;
+        }
       }
     });
   }

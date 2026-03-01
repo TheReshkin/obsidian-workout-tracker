@@ -44,10 +44,9 @@ export function showSuggestions(
   suggestions: string[],
   container: HTMLElement,
   nameInput: HTMLInputElement,
-  oneRMInput: HTMLInputElement,
   sourcePath: string,
   plugin: WorkoutTrackerPlugin,
-  onCreateNew?: (name: string, oneRMInput: HTMLInputElement) => void
+  onCreateNew?: (name: string) => void
 ) {
   container.empty();
 
@@ -65,14 +64,6 @@ export function showSuggestions(
       suggestionEl.addEventListener('click', async () => {
         nameInput.value = suggestion;
         container.style.display = 'none';
-
-        // Пытаемся подставить 1ПМ для выбранного упражнения
-        if (!oneRMInput.value) {
-          const exerciseFromLibrary = await getExerciseFromLibrary(plugin, sourcePath, suggestion);
-          if (exerciseFromLibrary && exerciseFromLibrary.currentOneRM) {
-            oneRMInput.value = exerciseFromLibrary.currentOneRM.toString();
-          }
-        }
       });
     });
 
@@ -94,7 +85,7 @@ export function showSuggestions(
         container.style.display = 'none';
 
         if (onCreateNew) {
-          onCreateNew(inputValue, oneRMInput);
+          onCreateNew(inputValue);
         }
       });
     }

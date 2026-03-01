@@ -204,19 +204,14 @@ export class ExerciseLibraryManager {
       });
     }
 
-    if (exercise.currentOneRM) {
+    // If exercise has 1RM history, show latest record
+    if (exercise.oneRMHistory && exercise.oneRMHistory.length > 0) {
+      const lastUpdate = exercise.oneRMHistory[exercise.oneRMHistory.length - 1];
       const oneRMInfo = card.createDiv({ cls: 'exercise-one-rm' });
-      oneRMInfo.createEl('strong', { text: 'Текущий 1ПМ: ' });
-      oneRMInfo.createSpan({ text: `${exercise.currentOneRM} кг` });
-      
-      if (exercise.oneRMHistory && exercise.oneRMHistory.length > 0) {
-        const lastUpdate = exercise.oneRMHistory[exercise.oneRMHistory.length - 1];
-        const updateDate = new Date(lastUpdate.date).toLocaleDateString('ru-RU');
-        oneRMInfo.createEl('span', { 
-          text: ` (обновлено ${updateDate})`,
-          cls: 'exercise-one-rm-date'
-        });
-      }
+      oneRMInfo.createEl('strong', { text: 'Последний 1ПМ: ' });
+      oneRMInfo.createSpan({ text: `${lastUpdate.value} кг` });
+      const updateDate = new Date(lastUpdate.date).toLocaleDateString('ru-RU');
+      oneRMInfo.createEl('span', { text: ` (обновлено ${updateDate})`, cls: 'exercise-one-rm-date' });
     }
   }
 
@@ -264,12 +259,7 @@ export class ExerciseLibraryManager {
       cls: 'exercise-input exercise-textarea'
     });
 
-    // Поле для текущего 1ПМ
-    const oneRMInput = form.createEl('input', {
-      type: 'number',
-      placeholder: 'Текущий 1ПМ (кг) - опционально',
-      cls: 'exercise-input'
-    });
+    // No manual 1ПМ field: peak max is optional via history only
 
     // Кнопки
     const buttons = form.createDiv({ cls: 'exercise-form-buttons' });
@@ -298,12 +288,7 @@ export class ExerciseLibraryManager {
         difficulty: difficultySelect.value as any,
         description: descriptionInput.value.trim(),
         muscleGroups: muscleGroupsInput.value.split(',').map(g => g.trim()).filter(g => g),
-        currentOneRM: parseFloat(oneRMInput.value) || undefined,
-        oneRMHistory: parseFloat(oneRMInput.value) ? [{
-          date: new Date().toISOString().split('T')[0], // сегодняшняя дата
-          value: parseFloat(oneRMInput.value),
-          notes: 'Начальное значение'
-        }] : undefined
+        oneRMHistory: undefined
       };
 
       await this.addExercise(nameInput.value.trim(), exercise);

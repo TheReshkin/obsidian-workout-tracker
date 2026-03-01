@@ -67,17 +67,90 @@ export function showExerciseForm(
     cls: 'workout-input'
   });
 
+  // Add native dropdown (datalist) populated from exercise library + recent workout names
+  const dataListId = `exercise-names-${Date.now()}`;
+  const nameDatalist = nameInputContainer.createEl('datalist', { cls: 'exercise-names-datalist' });
+  nameDatalist.id = dataListId;
+  nameInput.setAttribute('list', dataListId);
+
+  // Toggle to search across all exercises (off = prefer current workout type)
+  const searchAllContainer = nameInputContainer.createDiv({ cls: 'search-all-container' });
+  const searchAllLabel = searchAllContainer.createEl('label', { text: 'Искать по всем упражнениям' });
+  const searchAllCheckbox = searchAllContainer.createEl('input', { type: 'checkbox', cls: 'search-all-checkbox' }) as HTMLInputElement;
+  searchAllLabel.prepend(searchAllCheckbox);
+
+  // Populate datalist with names, optionally filtered by workout type
+  let cachedLibNames: string[] = [];
+  let cachedWorkoutNames: string[] = [];
+
+  async function loadNames() {
+    try {
+      const lib = await ctx.plugin.dataManager.getExerciseLibrary();
+      const workoutData = await ctx.plugin.dataManager.getWorkoutData();
+      cachedLibNames = Object.keys(lib.exercises || {});
+      const workoutNamesSet = new Set<string>();
+      Object.values(workoutData).forEach(w => {
+        if (w.exercises) w.exercises.forEach(e => workoutNamesSet.add(e.name));
+      });
+      cachedWorkoutNames = Array.from(workoutNamesSet);
+    } catch (e) {
+      cachedLibNames = [];
+      cachedWorkoutNames = [];
+    }
+  }
+
+  function populateDatalist(searchAll: boolean) {
+    nameDatalist.empty();
+    const groupFilter = workout && workout.type ? workout.type.toLowerCase() : undefined;
+    const candidates = new Set<string>();
+    if (searchAll) {
+      cachedLibNames.forEach(n => candidates.add(n));
+      cachedWorkoutNames.forEach(n => candidates.add(n));
+    } else {
+      // prefer exercises from library matching workout type
+      cachedLibNames.forEach(n => {
+        try {
+          const spec = ctx.plugin.dataManager.getExerciseLibrary().then(lib => lib.exercises[n]);
+        } catch (e) {
+          // ignore
+        }
+      });
+      // We'll perform a best-effort filter using stored specs synchronously where possible
+      // Fallback: include cached workout names if no library match
+      cachedWorkoutNames.forEach(n => candidates.add(n));
+      // Also include any library names that include the groupFilter text
+      if (groupFilter) {
+        cachedLibNames.forEach(n => {
+          if (n.toLowerCase().includes(groupFilter) || n.toLowerCase().includes(groupFilter.split(' ')[0])) {
+            candidates.add(n);
+          }
+        });
+      } else {
+        cachedLibNames.forEach(n => candidates.add(n));
+      }
+    }
+    Array.from(candidates).sort().forEach(n => nameDatalist.createEl('option', { value: n }));
+  }
+
+  // initial load + populate
+  loadNames().then(() => populateDatalist(false));
+  searchAllCheckbox.addEventListener('change', () => populateDatalist(searchAllCheckbox.checked));
+
   // Контейнер для предложений
   const suggestionsContainer = nameInputContainer.createDiv({
     cls: 'workout-suggestions-container'
   });
   suggestionsContainer.style.display = 'none';
 
-  // Автодополнение для названий упражнений
-  let suggestionsTimeout: NodeJS.Timeout;
-  nameInput.addEventListener('input', () => {
-    clearTimeout(suggestionsTimeout);
+  // 1RM is estimated from sets; no manual input required
 
+
+  // Автодополнение для названий упражнений и авто-подстановка 1ПМ
+  let suggestionsTimeout: NodeJS.Timeout;
+  let searchTimeout: NodeJS.Timeout;
+  nameInput.addEventListener('input', () => {
+    // suggestions
+    clearTimeout(suggestionsTimeout);
     suggestionsTimeout = setTimeout(async () => {
       const inputValue = nameInput.value.trim().toLowerCase();
       if (inputValue.length >= 2) {
@@ -86,15 +159,16 @@ export function showExerciseForm(
           suggestions,
           suggestionsContainer,
           nameInput,
-          oneRMInput,
           ctx.sourcePath,
           ctx.plugin,
-          (name, rmInput) => showCreateExerciseForm(ctx.plugin, name, rmInput)
+          (name) => showCreateExerciseForm(ctx.plugin, name)
         );
       } else {
         suggestionsContainer.style.display = 'none';
       }
     }, 300);
+
+    // no manual 1RM; estimation will be derived from sets
   });
 
   // Скрываем предложения при клике вне (with cleanup via AbortController)
@@ -105,30 +179,7 @@ export function showExerciseForm(
     }
   }, { signal: suggestionsAbort.signal });
 
-  // Текущий 1ПМ для упражнения
-  form.createEl('label', { text: 'Текущий 1ПМ (пиковый максимум):' });
-  const oneRMInput = form.createEl('input', {
-    type: 'number',
-    value: (exercise?.currentOneRM || '').toString(),
-    placeholder: 'Введите текущий 1ПМ в кг',
-    cls: 'workout-input'
-  });
 
-  // Автоматическое подставление 1ПМ из библиотеки при вводе названия
-  let searchTimeout: NodeJS.Timeout;
-  nameInput.addEventListener('input', () => {
-    if (searchTimeout) clearTimeout(searchTimeout);
-
-    searchTimeout = setTimeout(async () => {
-      const exerciseName = nameInput.value.trim();
-      if (exerciseName && !oneRMInput.value) {
-        const exerciseFromLibrary = await getExerciseFromLibrary(ctx.plugin, ctx.sourcePath, exerciseName);
-        if (exerciseFromLibrary && exerciseFromLibrary.currentOneRM) {
-          oneRMInput.value = exerciseFromLibrary.currentOneRM.toString();
-        }
-      }
-    }, 1000);
-  });
 
   // Подходы — dropdown для количества
   form.createEl('label', { text: 'Количество подходов:' });
@@ -230,6 +281,63 @@ export function showExerciseForm(
     }
   }
 
+  // Estimate 1RM from available sets using Epley formula: w*(1+reps/30)
+  function estimateOneRMFromSets(): number | undefined {
+    if (!sets || !sets.length) return undefined;
+    let best = 0;
+    sets.forEach(s => {
+      if (s.weight && s.weight > 0 && s.reps && s.reps > 0) {
+        const est = s.weight * (1 + (s.reps / 30));
+        if (est > best) best = est;
+      }
+    });
+    return best > 0 ? Math.round(best) : undefined;
+  }
+
+  /** Render reps picker: chips 1..16 and a free input; max 16 */
+  function renderRepsPicker(
+    parent: HTMLElement,
+    currentReps: number,
+    onSelect: (r: number) => void
+  ) {
+    parent.empty();
+    parent.addClass('reps-picker');
+
+    // free-form input
+    const freeInput = parent.createEl('input', {
+      type: 'number',
+      value: currentReps && currentReps > 0 ? String(currentReps) : '',
+      placeholder: 'Повторы',
+      cls: 'workout-input workout-input-small reps-free-input'
+    }) as HTMLInputElement;
+    freeInput.min = '1';
+    freeInput.max = '16';
+    freeInput.addEventListener('input', () => {
+      const v = parseInt(freeInput.value, 10);
+      if (Number.isFinite(v) && v > 0) {
+        const capped = Math.min(16, Math.max(1, v));
+        onSelect(capped);
+      }
+    });
+
+    const chipsRow = parent.createDiv({ cls: 'reps-chips' });
+    for (let r = 1; r <= 16; r++) {
+      const chip = chipsRow.createEl('button', {
+        text: String(r),
+        cls: `reps-chip${r === currentReps ? ' active' : ''}`
+      });
+      chip.type = 'button';
+      chip.tabIndex = -1;
+      chip.addEventListener('click', (e) => {
+        e.preventDefault();
+        onSelect(r);
+        freeInput.value = String(r);
+        chipsRow.querySelectorAll('.reps-chip').forEach(c => c.removeClass('active'));
+        chip.addClass('active');
+      });
+    }
+  }
+
   const renderSets = () => {
     setsContainer.empty();
     setInputs.length = 0;
@@ -238,11 +346,20 @@ export function showExerciseForm(
       const setRow = setsContainer.createDiv({ cls: 'workout-set-row' });
       setRow.createEl('span', { text: `Подход ${index + 1}:`, cls: 'set-label' });
 
-      const repsInput = setRow.createEl('input', {
-        type: 'number',
-        value: (set.reps !== undefined && set.reps !== null && set.reps !== 0) ? set.reps.toString() : '',
-        placeholder: 'Повторы',
-        cls: 'workout-input workout-input-small'
+      // reps picker (chips 1..16 + free input). store value in hidden repsInput
+      const repsPickerContainer = setRow.createDiv({ cls: 'reps-picker-container' });
+      const repsInput = document.createElement('input') as HTMLInputElement;
+      repsInput.type = 'number';
+      repsInput.style.display = 'none';
+      repsInput.min = '1';
+      repsInput.max = '16';
+      repsInput.value = (set.reps !== undefined && set.reps !== null && set.reps !== 0) ? set.reps.toString() : '';
+      setRow.appendChild(repsInput);
+      renderRepsPicker(repsPickerContainer, set.reps || 0, (r) => {
+        repsInput.value = String(r);
+        set.reps = r;
+        // Recalculate intensities since estimated 1RM may have changed
+        recalcAllIntensities();
       });
       setRow.createEl('span', { text: 'раз' });
 
@@ -256,9 +373,9 @@ export function showExerciseForm(
       renderWeightPicker(weightPickerContainer, set.weight || 0, (w) => {
         weightInput.value = String(w);
         set.weight = w;
-        // auto-calc intensity
-        const oneRM = oneRMInput.valueAsNumber;
-        if (Number.isFinite(oneRM) && oneRM > 0) {
+        // auto-calc intensity using estimated 1RM from sets
+        const oneRM = estimateOneRMFromSets();
+        if (oneRM && Number.isFinite(oneRM) && oneRM > 0) {
           const intensity = calculateIntensity(w, oneRM);
           intensityInput.value = intensity.toString();
           set.intensity = intensity;
@@ -278,15 +395,15 @@ export function showExerciseForm(
       // intensity → weight
       intensityInput.addEventListener('input', () => {
         const intensity = intensityInput.valueAsNumber;
-        const oneRM = oneRMInput.valueAsNumber;
-        if (Number.isFinite(oneRM) && Number.isFinite(intensity) && intensity >= 0 && intensity <= 100) {
+        const oneRM = estimateOneRMFromSets();
+        if (oneRM && Number.isFinite(oneRM) && Number.isFinite(intensity) && intensity >= 0 && intensity <= 100) {
           const weight = calculateWeight(intensity, oneRM);
           weightInput.value = weight.toString();
           set.weight = weight;
           renderWeightPicker(weightPickerContainer, weight, (w) => {
             weightInput.value = String(w);
             set.weight = w;
-            const newIntensity = calculateIntensity(w, oneRM);
+            const newIntensity = calculateIntensity(w, oneRM!);
             intensityInput.value = newIntensity.toString();
             set.intensity = newIntensity;
           });
@@ -297,20 +414,19 @@ export function showExerciseForm(
     });
   };
 
-  // 1RM change → recalc all intensities (registered ONCE outside renderSets)
-  oneRMInput.addEventListener('input', () => {
-    const oneRMVal = oneRMInput.valueAsNumber;
-    if (!Number.isFinite(oneRMVal) || oneRMVal <= 0) return;
-    sets.forEach((s, i) => {
-      if (s.weight && s.weight > 0) {
-        const intensity = calculateIntensity(s.weight, oneRMVal);
-        if (setInputs[i]?.intensityInput) {
-          setInputs[i].intensityInput.value = intensity.toString();
-        }
-        s.intensity = intensity;
+  // Recalculate intensities for all sets using estimated 1RM
+  function recalcAllIntensities() {
+    const oneRM = estimateOneRMFromSets();
+    if (!oneRM || !setInputs.length) return;
+    setInputs.forEach((input, i) => {
+      const w = Number.parseFloat(input.weightInput.value) || 0;
+      if (w > 0) {
+        const intensity = calculateIntensity(w, oneRM);
+        input.intensityInput.value = String(intensity);
+        if (sets[i]) sets[i].intensity = intensity;
       }
     });
-  });
+  }
 
   // Sync sets array when dropdown changes
   setsCountSelect.addEventListener('change', () => {
@@ -326,9 +442,11 @@ export function showExerciseForm(
     while (sets.length < target) sets.push({ reps: 0, weight: 0, intensity: 0 });
     while (sets.length > target) sets.pop();
     renderSets();
+    recalcAllIntensities();
   });
 
   renderSets();
+  recalcAllIntensities();
 
   // Заметки к упражнению
   form.createEl('label', { text: 'Заметки:' });
@@ -365,13 +483,10 @@ export function showExerciseForm(
       intensity: parseFloat(intensityInput.value) || 0
     }));
 
-    const currentOneRM = parseFloat(oneRMInput.value) || undefined;
-
     const exerciseData = {
       name,
       sets: exerciseSets,
-      notes: notesInput.value.trim() || undefined,
-      currentOneRM
+      notes: notesInput.value.trim() || undefined
     };
 
     if (!workout.exercises) {

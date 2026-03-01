@@ -312,8 +312,10 @@ export class InlineWorkoutEditor {
     
     const exercisesContainer = exercisesSection.createDiv({ cls: 'workout-exercises-container' });
     
-    // Показать существующие упражнения
-    if (workout.exercises && workout.exercises.length > 0) {
+    // Render exercises into the container and support in-memory edits (batch save)
+    const renderExercises = () => {
+      exercisesContainer.empty();
+
       // drop indicator
       const dropIndicator = exercisesContainer.createDiv({ cls: 'workout-drop-indicator' });
       dropIndicator.style.display = 'none';
@@ -322,102 +324,101 @@ export class InlineWorkoutEditor {
       dropIndicator.style.borderRadius = '3px';
       dropIndicator.style.background = 'var(--interactive-accent)';
 
-      workout.exercises.forEach((exercise, index) => {
-        const exerciseEl = exercisesContainer.createDiv({ cls: 'workout-exercise-item' });
+      if (workout.exercises && workout.exercises.length > 0) {
+        workout.exercises.forEach((exercise, index) => {
+          const exerciseEl = exercisesContainer.createDiv({ cls: 'workout-exercise-item' });
 
-        const exerciseInfo = exerciseEl.createDiv({ cls: 'workout-exercise-info' });
-        exerciseInfo.textContent = `${index + 1}. ${exercise.name}: ${exercise.sets.length} подх.`;
+          const exerciseInfo = exerciseEl.createDiv({ cls: 'workout-exercise-info' });
+          exerciseInfo.textContent = `${index + 1}. ${exercise.name}: ${exercise.sets.length} подх.`;
 
-        // per-exercise status indicator removed — prefer workout-level status badge
+          const editBtn = exerciseEl.createEl('button', {
+            text: 'Изменить',
+            cls: 'workout-btn workout-btn-small'
+          });
 
-        const editBtn = exerciseEl.createEl('button', {
-          text: 'Изменить',
-          cls: 'workout-btn workout-btn-small'
+          const deleteBtn = exerciseEl.createEl('button', {
+            text: 'Удалить',
+            cls: 'workout-btn workout-btn-small workout-btn-danger'
+          });
+
+          editBtn.addEventListener('click', () => {
+            // Open exercise editor but don't persist to file yet; re-render after save
+            this.showExerciseForm(date, workout, index, true, renderExercises);
+          });
+
+          deleteBtn.addEventListener('click', () => {
+            if (confirm(`Удалить упражнение "${exercise.name}"?`)) {
+              workout.exercises!.splice(index, 1);
+              renderExercises();
+            }
+          });
+
+          // Make exercise draggable to reorder
+          exerciseEl.draggable = true;
+          exerciseEl.dataset.index = String(index);
+          exerciseEl.classList.add('workout-exercise-draggable');
+
+          exerciseEl.addEventListener('dragstart', (e) => {
+            (e.dataTransfer as DataTransfer).setData('text/plain', String(index));
+            exerciseEl.classList.add('workout-dragging');
+          });
+
+          exerciseEl.addEventListener('dragend', () => {
+            exerciseEl.classList.remove('workout-dragging');
+            dropIndicator.style.display = 'none';
+          });
+
+          exerciseEl.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            exerciseEl.classList.add('workout-drop-target');
+            const rect = exerciseEl.getBoundingClientRect();
+            const mid = rect.top + rect.height / 2;
+            const desiredBefore = ((e as DragEvent).clientY < mid) ? exerciseEl : exerciseEl.nextSibling;
+            if (dropIndicator.nextSibling !== desiredBefore) {
+              exercisesContainer.insertBefore(dropIndicator, desiredBefore);
+            }
+            if (dropIndicator.style.display !== 'block') dropIndicator.style.display = 'block';
+          });
+
+          exerciseEl.addEventListener('dragleave', () => {
+            exerciseEl.classList.remove('workout-drop-target');
+          });
+
+          exerciseEl.addEventListener('drop', (e) => {
+            e.preventDefault();
+            exerciseEl.classList.remove('workout-drop-target');
+            dropIndicator.style.display = 'none';
+            const src = (e.dataTransfer as DataTransfer).getData('text/plain');
+            const srcIndex = parseInt(src, 10);
+            const children = Array.from(exercisesContainer.querySelectorAll('.workout-exercise-item')) as HTMLElement[];
+            let destIndex = children.indexOf(exerciseEl);
+            const rect = exerciseEl.getBoundingClientRect();
+            const mid = rect.top + rect.height / 2;
+            if ((e as DragEvent).clientY >= mid) destIndex = destIndex + 1;
+            if (!isNaN(srcIndex) && !isNaN(destIndex) && srcIndex !== destIndex) {
+              const item = workout.exercises!.splice(srcIndex, 1)[0];
+              const adjustedIndex = srcIndex < destIndex ? destIndex - 1 : destIndex;
+              workout.exercises!.splice(adjustedIndex, 0, item);
+              // re-render in-memory order
+              renderExercises();
+            }
+          });
         });
+      }
 
-        const deleteBtn = exerciseEl.createEl('button', {
-          text: 'Удалить',
-          cls: 'workout-btn workout-btn-small workout-btn-danger'
-        });
-
-        editBtn.addEventListener('click', () => {
-          this.showExerciseForm(date, workout, index);
-        });
-
-        deleteBtn.addEventListener('click', () => {
-          if (confirm(`Удалить упражнение "${exercise.name}"?`)) {
-            workout.exercises!.splice(index, 1);
-            this.updateWorkout(date, workout);
-            this.hideModal(modal);
-            this.showEditWorkoutForm(date, workout);
-          }
-        });
-
-        // Make exercise draggable to reorder
-        exerciseEl.draggable = true;
-        exerciseEl.dataset.index = String(index);
-        exerciseEl.classList.add('workout-exercise-draggable');
-
-        exerciseEl.addEventListener('dragstart', (e) => {
-          (e.dataTransfer as DataTransfer).setData('text/plain', String(index));
-          exerciseEl.classList.add('workout-dragging');
-        });
-
-        exerciseEl.addEventListener('dragend', () => {
-          exerciseEl.classList.remove('workout-dragging');
-          dropIndicator.style.display = 'none';
-        });
-
-        exerciseEl.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          exerciseEl.classList.add('workout-drop-target');
-          const rect = exerciseEl.getBoundingClientRect();
-          const mid = rect.top + rect.height / 2;
-          const desiredBefore = ((e as DragEvent).clientY < mid) ? exerciseEl : exerciseEl.nextSibling;
-          if (dropIndicator.nextSibling !== desiredBefore) {
-            exercisesContainer.insertBefore(dropIndicator, desiredBefore);
-          }
-          if (dropIndicator.style.display !== 'block') dropIndicator.style.display = 'block';
-        });
-
-        exerciseEl.addEventListener('dragleave', () => {
-          exerciseEl.classList.remove('workout-drop-target');
-          // do not hide immediately to reduce flicker
-        });
-
-        exerciseEl.addEventListener('drop', async (e) => {
-          e.preventDefault();
-          exerciseEl.classList.remove('workout-drop-target');
-          dropIndicator.style.display = 'none';
-          const src = (e.dataTransfer as DataTransfer).getData('text/plain');
-          const srcIndex = parseInt(src, 10);
-          const children = Array.from(exercisesContainer.querySelectorAll('.workout-exercise-item')) as HTMLElement[];
-          let destIndex = children.indexOf(exerciseEl);
-          const rect = exerciseEl.getBoundingClientRect();
-          const mid = rect.top + rect.height / 2;
-          if ((e as DragEvent).clientY >= mid) destIndex = destIndex + 1;
-          if (!isNaN(srcIndex) && !isNaN(destIndex) && srcIndex !== destIndex) {
-            const item = workout.exercises!.splice(srcIndex, 1)[0];
-            const adjustedIndex = srcIndex < destIndex ? destIndex - 1 : destIndex;
-            workout.exercises!.splice(adjustedIndex, 0, item);
-            // Save new order and re-open editor to reflect changes
-            await this.updateWorkout(date, workout);
-            this.hideModal(modal);
-            this.showEditWorkoutForm(date, workout);
-          }
-        });
+      // Кнопка добавления упражнения (operates in-memory; Save persists whole workout)
+      const addExerciseBtn = exercisesContainer.createEl('button', {
+        text: 'Добавить упражнение',
+        cls: 'workout-btn workout-btn-secondary'
       });
-    }
-    
-    // Кнопка добавления упражнения
-    const addExerciseBtn = exercisesContainer.createEl('button', {
-      text: 'Добавить упражнение',
-      cls: 'workout-btn workout-btn-secondary'
-    });
-    
-    addExerciseBtn.addEventListener('click', () => {
-      this.showExerciseForm(date, workout, -1);
-    });
+
+      addExerciseBtn.addEventListener('click', () => {
+        this.showExerciseForm(date, workout, -1, true, renderExercises);
+      });
+    };
+
+    // initial render
+    renderExercises();
 
     // Кнопки
     const buttons = form.createDiv({ cls: 'workout-form-buttons' });
@@ -519,9 +520,19 @@ export class InlineWorkoutEditor {
           const setsSummary = item.createDiv({ cls: 'exercise-sets' });
           setsSummary.textContent = `${exercise.sets.length} подх., ${exercise.sets.reduce((acc, s) => acc + (s.reps || 0), 0)} повт.`;
         }
-        if (exercise.currentOneRM && exercise.currentOneRM > 0) {
-          const oneRm = item.createDiv({ cls: 'exercise-one-rm-info' });
-          oneRm.textContent = `1ПМ: ${exercise.currentOneRM} кг`;
+        // Estimate 1RM from sets if available
+        if (exercise.sets && exercise.sets.length > 0) {
+          let best = 0;
+          exercise.sets.forEach(s => {
+            if (s.weight && s.weight > 0 && s.reps && s.reps > 0) {
+              const est = s.weight * (1 + (s.reps / 30));
+              if (est > best) best = est;
+            }
+          });
+          if (best > 0) {
+            const oneRm = item.createDiv({ cls: 'exercise-one-rm-info' });
+            oneRm.textContent = `1ПМ: ${Math.round(best)} кг`;
+          }
         }
 
         const actions = item.createDiv({ cls: 'single-day-item-actions' });

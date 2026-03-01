@@ -7,8 +7,7 @@ import { createFullscreenModal, hideModal } from '../../utils/dom-helpers';
  */
 export async function showCreateExerciseForm(
   plugin: WorkoutTrackerPlugin,
-  exerciseName: string,
-  oneRMInput: HTMLInputElement
+  exerciseName: string
 ) {
   const modal = createFullscreenModal();
   const form = modal.createDiv({ cls: 'workout-inline-form' });
@@ -39,13 +38,7 @@ export async function showCreateExerciseForm(
     cls: 'workout-input workout-textarea'
   });
 
-  // 1ПМ
-  form.createEl('label', { text: 'Текущий 1ПМ (необязательно):' });
-  const currentOneRMInput = form.createEl('input', {
-    type: 'number',
-    placeholder: 'Вес в кг',
-    cls: 'workout-input'
-  });
+
 
   // Кнопки
   const buttons = form.createDiv({ cls: 'workout-form-buttons' });
@@ -66,10 +59,10 @@ export async function showCreateExerciseForm(
       return;
     }
 
+
     const exerciseSpec = {
       group: groupSelect.value,
       description: descInput.value.trim() || undefined,
-      currentOneRM: parseFloat(currentOneRMInput.value) || undefined,
       muscleGroups: [groupSelect.value],
       difficulty: 'начинающий' as const
     };
@@ -78,9 +71,7 @@ export async function showCreateExerciseForm(
       await plugin.dataManager.addExercise(exerciseName, exerciseSpec);
       await plugin.dataManager.loadExerciseLibrary();
 
-      if (exerciseSpec.currentOneRM && !oneRMInput.value) {
-        oneRMInput.value = exerciseSpec.currentOneRM.toString();
-      }
+      // Do not auto-fill 1RM when adding an exercise to the library (library entry is metadata only)
 
       hideModal(modal);
       new Notice(`Упражнение "${exerciseName}" добавлено в библиотеку`);
